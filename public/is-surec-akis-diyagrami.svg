@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2000" height="1480" viewBox="0 0 2000 1480" role="img" aria-labelledby="title description">
+  <title id="title">Kadro ve Personel Atama İş/Süreç Akış Diyagramı</title>
+  <desc id="description">Admin'in kadro ünvanı, hizmet sınıfı, durum kodu ve ekstra durum tanımlarını yönetmesinden; İK Sorumlusunun kadro veya personel atama talebi oluşturmasına, sistem doğrulamasına ve İK Müdürünün onay veya ret kararına kadar süreci gösterir.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#be123c"/></marker>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0f172a" flood-opacity=".08"/></filter>
+    <style>
+      text { font-family: Arial, "DejaVu Sans", sans-serif; }
+      .title { font-size: 34px; font-weight: 700; letter-spacing: -.5px; }
+      .subtitle { font-size: 16px; fill: #475569; }
+      .lane-title { font-size: 17px; font-weight: 700; letter-spacing: 1.3px; }
+      .node-title { font-size: 16px; font-weight: 700; }
+      .node-copy { font-size: 13px; fill: #475569; }
+      .small { font-size: 12px; fill: #64748b; }
+      .branch { font-size: 12px; font-weight: 700; fill: #475569; }
+      .lane { fill: #fff; stroke: #dbe4ec; stroke-width: 1.5; }
+      .flow { fill: none; stroke: #64748b; stroke-width: 2.4; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+      .flow-teal { fill: none; stroke: #0f766e; stroke-width: 2.5; marker-end: url(#arrow-teal); stroke-linecap: round; stroke-linejoin: round; }
+      .flow-green { fill: none; stroke: #15803d; stroke-width: 2.5; marker-end: url(#arrow-green); stroke-linecap: round; stroke-linejoin: round; }
+      .flow-red { fill: none; stroke: #be123c; stroke-width: 2.5; marker-end: url(#arrow-red); stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="2000" height="1480" fill="#f4f7fa"/>
+  <rect x="0" y="0" width="2000" height="125" fill="#0b2538"/>
+  <rect x="0" y="119" width="2000" height="6" fill="#0f766e"/>
+  <text x="64" y="58" class="title" fill="#ffffff">İş / Süreç Akış Diyagramı</text>
+  <text x="66" y="91" class="subtitle" fill="#cbd5e1">Kadro yönetimi · Personel atama · Sistem parametreleri · Onay süreci</text>
+  <rect x="1620" y="37" width="316" height="48" rx="24" fill="#173b50" stroke="#2a5366"/>
+  <text x="1778" y="67" text-anchor="middle" font-size="13" font-weight="700" fill="#d8e8ee">ROLLER: ADMIN · İK SORUMLUSU · İK MÜDÜRÜ</text>
+
+  <!-- Admin parameter lane -->
+  <rect class="lane" x="48" y="150" width="1904" height="350" rx="18" filter="url(#shadow)"/>
+  <path d="M66 150 H1934 Q1952 150 1952 168 V204 H48 V168 Q48 150 66 150" fill="#e8f4f3"/>
+  <circle cx="82" cy="177" r="8" fill="#0f766e"/>
+  <text x="102" y="183" class="lane-title" fill="#115e59">1 · ADMIN — PARAMETRE TANIMLARI</text>
+  <text x="1915" y="182" text-anchor="end" class="small">Sadece Admin ekler ve kaldırır</text>
+
+  <path class="flow-teal" d="M255 345 H310"/>
+  <path class="flow-teal" d="M510 345 H560"/>
+  <path class="flow-teal" d="M780 345 H830"/>
+  <path class="flow-teal" d="M980 315 H1030 V270 H1080"/>
+  <path class="flow-teal" d="M980 375 H1030 V425 H1080"/>
+  <path class="flow-teal" d="M1320 270 H1400"/>
+  <path class="flow-teal" d="M1522 310 V330"/>
+  <path class="flow-teal" d="M1320 425 H1370 V365 H1400"/>
+  <path class="flow-teal" d="M1645 365 H1705"/>
+
+  <rect x="78" y="304" width="177" height="82" rx="16" fill="#0f766e"/>
+  <text x="166" y="338" text-anchor="middle" class="node-title" fill="#fff">ADMIN</text>
+  <text x="166" y="362" text-anchor="middle" font-size="12" fill="#d8f3ef">Yetkili kullanıcı</text>
+
+  <rect x="310" y="300" width="200" height="90" rx="14" fill="#fff" stroke="#99c9c2" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="410" y="337" text-anchor="middle" class="node-title">Sistem Parametreleri</text>
+  <text x="410" y="360" text-anchor="middle" class="node-copy">bölümünü açar</text>
+
+  <rect x="560" y="300" width="220" height="90" rx="14" fill="#fff" stroke="#99c9c2" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="670" y="330" text-anchor="middle" class="node-title">Listeyi seçer</text>
+  <text x="670" y="354" text-anchor="middle" class="node-copy">Kadro Ünvanı · Hizmet Sınıfı</text>
+  <text x="670" y="374" text-anchor="middle" class="node-copy">Durum Kodu · Ekstra Durum</text>
+
+  <polygon points="905,275 980,345 905,415 830,345" fill="#fff7ed" stroke="#ea8a39" stroke-width="2" filter="url(#shadow)"/>
+  <text x="905" y="340" text-anchor="middle" font-size="14" font-weight="700">Ekle veya</text>
+  <text x="905" y="360" text-anchor="middle" font-size="14" font-weight="700">kaldır?</text>
+  <text x="1000" y="263" class="branch">EKLE</text>
+  <text x="1000" y="441" class="branch">KALDIR</text>
+
+  <rect x="1080" y="230" width="240" height="80" rx="14" fill="#fff" stroke="#99c9c2" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="1200" y="261" text-anchor="middle" class="node-title">Değer doğrulama</text>
+  <text x="1200" y="284" text-anchor="middle" class="node-copy">Boş / yinelenen değer engellenir</text>
+
+  <rect x="1400" y="230" width="245" height="80" rx="14" fill="#ecfdf5" stroke="#86c9a0" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="1522" y="261" text-anchor="middle" class="node-title" fill="#166534">Tanım listeye eklenir</text>
+  <text x="1522" y="284" text-anchor="middle" class="node-copy">Durum Kodu büyük harfe çevrilir</text>
+
+  <rect x="1080" y="390" width="240" height="70" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="1200" y="420" text-anchor="middle" class="node-title">Tanım kaldırılır</text>
+  <text x="1200" y="441" text-anchor="middle" class="node-copy">Yeni seçimlerden çıkar</text>
+
+  <rect x="1400" y="310" width="245" height="70" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="1522" y="339" text-anchor="middle" class="node-title">Form seçenekleri güncellenir</text>
+  <text x="1522" y="360" text-anchor="middle" class="node-copy">Kadro / Personel Atama</text>
+
+  <rect x="1705" y="294" width="205" height="102" rx="14" fill="#eff6ff" stroke="#93b4da" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="1807" y="328" text-anchor="middle" class="node-title">Mevcut kayıtlar</text>
+  <text x="1807" y="352" text-anchor="middle" class="node-copy">tanım kaldırıldığında</text>
+  <text x="1807" y="372" text-anchor="middle" class="node-copy">değiştirilmez</text>
+
+
+  <!-- Request creation lane -->
+  <rect class="lane" x="48" y="520" width="1904" height="480" rx="18" filter="url(#shadow)"/>
+  <path d="M66 520 H1934 Q1952 520 1952 538 V574 H48 V538 Q48 520 66 520" fill="#eef3f8"/>
+  <circle cx="82" cy="547" r="8" fill="#315d7a"/>
+  <text x="102" y="553" class="lane-title" fill="#244862">2 · İK SORUMLUSU — KADRO / PERSONEL ATAMA TALEBİ</text>
+  <text x="1915" y="552" text-anchor="end" class="small">Yetkili kullanıcı kayıtları ayrıca görüntüleyebilir</text>
+
+  <path class="flow" d="M225 760 H278"/>
+  <path class="flow" d="M420 714 H470 V660 H520"/>
+  <path class="flow" d="M420 806 H470 V870 H520"/>
+  <path class="flow" d="M810 660 H850 V740 H895"/>
+  <path class="flow" d="M810 870 H850 V790 H895"/>
+  <path class="flow-red" d="M970 825 V920 H810 V898"/>
+  <path class="flow-green" d="M1045 760 H1110"/>
+  <path class="flow-green" d="M1295 760 H1380 V1075 H185 V1155"/>
+
+  <rect x="75" y="720" width="150" height="80" rx="40" fill="#e0f2fe" stroke="#7bb2d1" stroke-width="1.7"/>
+  <text x="150" y="752" text-anchor="middle" class="node-title">Başlangıç</text>
+  <text x="150" y="775" text-anchor="middle" class="node-copy">Kullanıcı giriş yapar</text>
+
+  <polygon points="350,680 422,760 350,840 278,760" fill="#fff7ed" stroke="#ea8a39" stroke-width="2" filter="url(#shadow)"/>
+  <text x="350" y="753" text-anchor="middle" font-size="13" font-weight="700">İşlem türü</text>
+  <text x="350" y="772" text-anchor="middle" font-size="13" font-weight="700">nedir?</text>
+  <text x="454" y="646" class="branch">KADRO</text>
+  <text x="454" y="886" class="branch">ATAMA</text>
+
+  <rect x="520" y="605" width="290" height="110" rx="14" fill="#fff" stroke="#9db7ca" stroke-width="1.6" filter="url(#shadow)"/>
+  <rect x="520" y="605" width="8" height="110" rx="4" fill="#315d7a"/>
+  <text x="665" y="637" text-anchor="middle" class="node-title">Kadro oluştur / düzenle</text>
+  <text x="665" y="662" text-anchor="middle" class="node-copy">Birim ve kadro bilgileri girilir</text>
+  <text x="665" y="684" text-anchor="middle" class="node-copy">Ünvan · Hizmet Sınıfı · Durum Kodu</text>
+
+  <rect x="520" y="815" width="290" height="110" rx="14" fill="#fff" stroke="#9db7ca" stroke-width="1.6" filter="url(#shadow)"/>
+  <rect x="520" y="815" width="8" height="110" rx="4" fill="#315d7a"/>
+  <text x="665" y="847" text-anchor="middle" class="node-title">Personel ataması oluştur</text>
+  <text x="665" y="872" text-anchor="middle" class="node-copy">Personel · Kadro · Atama bilgileri</text>
+  <text x="665" y="894" text-anchor="middle" class="node-copy">Ekstra Durum seçimi isteğe bağlı</text>
+
+  <polygon points="970,675 1045,760 970,845 895,760" fill="#fff7ed" stroke="#ea8a39" stroke-width="2" filter="url(#shadow)"/>
+  <text x="970" y="751" text-anchor="middle" font-size="13" font-weight="700">Zorunlu alanlar</text>
+  <text x="970" y="771" text-anchor="middle" font-size="13" font-weight="700">geçerli mi?</text>
+  <text x="1060" y="741" class="branch" fill="#15803d">EVET</text>
+  <text x="981" y="884" class="branch" fill="#be123c">HAYIR · düzelt</text>
+
+  <rect x="1110" y="715" width="185" height="90" rx="14" fill="#e8f4f3" stroke="#79b9af" stroke-width="1.7" filter="url(#shadow)"/>
+  <text x="1202" y="750" text-anchor="middle" class="node-title" fill="#115e59">Talep gönderilir</text>
+  <text x="1202" y="775" text-anchor="middle" class="node-copy">Onay sürecine iletilir</text>
+
+  <rect x="1410" y="620" width="450" height="250" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="1440" y="660" class="node-title">Sistem kontrolleri</text>
+  <circle cx="1445" cy="697" r="4" fill="#0f766e"/><text x="1460" y="702" class="node-copy">Zorunlu alanlar ve değerler doğrulanır</text>
+  <circle cx="1445" cy="731" r="4" fill="#0f766e"/><text x="1460" y="736" class="node-copy">Ekstra Durum boş bırakılabilir</text>
+  <circle cx="1445" cy="765" r="4" fill="#0f766e"/><text x="1460" y="770" class="node-copy">Kullanıcı rolü ve işlem yetkisi kontrol edilir</text>
+  <circle cx="1445" cy="799" r="4" fill="#0f766e"/><text x="1460" y="804" class="node-copy">Geçersiz girişte talep onaya gönderilmez</text>
+  <text x="1440" y="842" class="small">Yetkisiz işlem sistem tarafından engellenir.</text>
+
+  <!-- Approval lane -->
+  <rect class="lane" x="48" y="1020" width="1904" height="380" rx="18" filter="url(#shadow)"/>
+  <path d="M66 1020 H1934 Q1952 1020 1952 1038 V1074 H48 V1038 Q48 1020 66 1020" fill="#f1effa"/>
+  <circle cx="82" cy="1047" r="8" fill="#6d5a9d"/>
+  <text x="102" y="1053" class="lane-title" fill="#51427a">3 · İK MÜDÜRÜ — TALEBİ İNCELEME VE KARAR</text>
+  <text x="1915" y="1052" text-anchor="end" class="small">Talep sahibi kendi talebini onaylayamaz</text>
+
+  <path class="flow" d="M480 1195 H520 V1125 H560"/>
+  <path class="flow-green" d="M710 1125 H825"/>
+  <path class="flow-red" d="M635 1170 V1300 H825"/>
+  <path class="flow-green" d="M1015 1125 H1110"/>
+  <path class="flow-red" d="M1015 1300 H1110"/>
+  <path class="flow" d="M1300 1125 H1450"/>
+
+  <rect x="90" y="1155" width="190" height="80" rx="14" fill="#e8f4f3" stroke="#79b9af" stroke-width="1.6"/>
+  <text x="185" y="1188" text-anchor="middle" class="node-title">Bekleyen talepler</text>
+  <text x="185" y="1212" text-anchor="middle" class="node-copy">İK Müdürü talep listesi</text>
+
+  <rect x="330" y="1155" width="150" height="80" rx="14" fill="#fff" stroke="#b8a9d5" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="405" y="1188" text-anchor="middle" class="node-title">Talebi inceler</text>
+  <text x="405" y="1212" text-anchor="middle" class="node-copy">Bilgileri değerlendirir</text>
+
+  <polygon points="635,1080 710,1125 635,1170 560,1125" fill="#fff7ed" stroke="#ea8a39" stroke-width="2" filter="url(#shadow)"/>
+  <text x="635" y="1121" text-anchor="middle" font-size="13" font-weight="700">Karar</text>
+  <text x="635" y="1140" text-anchor="middle" font-size="13" font-weight="700">nedir?</text>
+  <text x="725" y="1110" class="branch" fill="#15803d">ONAY</text>
+  <text x="725" y="1319" class="branch" fill="#be123c">RET</text>
+
+  <rect x="825" y="1085" width="190" height="80" rx="14" fill="#ecfdf5" stroke="#86c9a0" stroke-width="1.6"/>
+  <text x="920" y="1118" text-anchor="middle" class="node-title" fill="#166534">Onaylandı</text>
+  <text x="920" y="1142" text-anchor="middle" class="node-copy">Kayıt durumu güncellenir</text>
+
+  <rect x="825" y="1260" width="190" height="80" rx="14" fill="#fff1f2" stroke="#fda4af" stroke-width="1.6"/>
+  <text x="920" y="1293" text-anchor="middle" class="node-title" fill="#9f1239">Reddedildi</text>
+  <text x="920" y="1317" text-anchor="middle" class="node-copy">Gerekçe ile bildirilebilir</text>
+
+  <rect x="1110" y="1085" width="190" height="80" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="1205" y="1118" text-anchor="middle" class="node-title">İlgililere bildirilir</text>
+  <text x="1205" y="1142" text-anchor="middle" class="node-copy">Sonuç görüntülenebilir</text>
+
+  <rect x="1110" y="1260" width="190" height="80" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="1205" y="1293" text-anchor="middle" class="node-title">İlgililere bildirilir</text>
+  <text x="1205" y="1317" text-anchor="middle" class="node-copy">Durum / gerekçe görünür</text>
+
+  <rect x="1450" y="1085" width="420" height="150" rx="16" fill="#eff6ff" stroke="#93b4da" stroke-width="1.6"/>
+  <text x="1490" y="1123" class="node-title" fill="#1e3a5f">Yetkili kullanıcılar</text>
+  <text x="1490" y="1152" class="node-copy">Kadro ve atama kayıtlarını görüntüler,</text>
+  <text x="1490" y="1175" class="node-copy">işlem durumunu takip eder.</text>
+  <text x="1490" y="1207" class="small">Erişim, kullanıcının rol ve yetkisine bağlıdır.</text>
+
+  <!-- Footer notes -->
+  <line x1="64" y1="1422" x2="1936" y2="1422" stroke="#d5dee7" stroke-width="1.2"/>
+  <text x="68" y="1452" class="small">Akış özeti: Parametre yönetimi → kadro/atama talebi → sistem doğrulaması → İK Müdürü kararı → durum bildirimi ve kayıt görüntüleme</text>
+  <g transform="translate(1470 1438)">
+    <rect x="0" y="0" width="20" height="15" rx="4" fill="#fff" stroke="#9db7ca"/><text x="28" y="13" class="small">İşlem</text>
+    <polygon points="105,0 115,7 105,14 95,7" fill="#fff7ed" stroke="#ea8a39"/><text x="122" y="13" class="small">Karar</text>
+    <path d="M205 7 H237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/><text x="246" y="13" class="small">Akış yönü</text>
+  </g>
+</svg>

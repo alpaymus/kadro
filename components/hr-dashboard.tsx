@@ -169,6 +169,63 @@ function FieldControl({ children, className = "" }: { children: React.ReactNode;
   return <span className={`flex h-10 items-center rounded-lg border border-slate-200 bg-white px-3 transition focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/15 ${className}`}>{children}</span>
 }
 
+function ParameterListManager({
+  title,
+  description,
+  inputLabel,
+  placeholder,
+  values,
+  onAdd,
+  onRemove,
+}: {
+  title: string
+  description: string
+  inputLabel: string
+  placeholder: string
+  values: string[]
+  onAdd: (value: string) => void
+  onRemove: (value: string) => void
+}) {
+  const [newValue, setNewValue] = useState("")
+  const [message, setMessage] = useState("")
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const trimmedValue = newValue.trim()
+    if (!trimmedValue) return
+    if (values.some((item) => item.toLocaleLowerCase("tr-TR") === trimmedValue.toLocaleLowerCase("tr-TR"))) {
+      setMessage("Bu değer zaten listede bulunuyor.")
+      return
+    }
+    onAdd(trimmedValue)
+    setNewValue("")
+    setMessage(`${trimmedValue} listeye eklendi.`)
+  }
+
+  return (
+    <article className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="border-b border-slate-100 px-4 py-4">
+        <h4 className="text-[13px] font-semibold text-slate-900">{title}</h4>
+        <p className="mt-1 text-[11px] leading-relaxed text-slate-500">{description}</p>
+      </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 border-b border-slate-100 p-4 sm:flex-row sm:items-end">
+        <FormField label={inputLabel}>
+          <FieldControl className="h-10 bg-slate-50/70"><input required maxLength={80} value={newValue} onChange={(event) => setNewValue(event.target.value)} placeholder={placeholder} className="w-full bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl>
+        </FormField>
+        <button type="submit" className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><Plus aria-hidden="true" className="size-3.5" />Ekle</button>
+      </form>
+      {message && <p role="status" className="mx-4 mt-3 rounded-md bg-teal-50 px-3 py-2 text-[10px] font-medium text-teal-800">{message}</p>}
+      <div className="p-4">
+        <div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold text-slate-700">Tanımlı değerler</span><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">{values.length}</span></div>
+        {values.length ? <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+          {values.map((value) => <li key={value} className="flex items-center justify-between gap-3 px-3 py-2"><span className="min-w-0 truncate text-[11px] font-medium text-slate-700">{value}</span><button type="button" onClick={() => onRemove(value)} aria-label={`${value} değerini sil`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-3.5" /></button></li>)}
+        </ul> : <p className="rounded-lg border border-dashed border-slate-300 px-3 py-5 text-center text-[11px] text-slate-500">Tanımlı değer yok.</p>}
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Kaldırılan tanım mevcut kadro kayıtlarını değiştirmez.</p>
+      </div>
+    </article>
+  )
+}
+
 function getVacantCount(slot: Slot) {
   return slot.vacantCount ?? (slot.status === "Boş" ? 1 : 0)
 }
@@ -184,6 +241,9 @@ export default function HrDashboard() {
   const [departmentUnits, setDepartmentUnits] = useState<string[]>(["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"])
   const [newDepartment, setNewDepartment] = useState("")
   const [departmentMessage, setDepartmentMessage] = useState("")
+  const [positionTitles, setPositionTitles] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.title))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [serviceClasses, setServiceClasses] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.serviceClass).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [statusCodes, setStatusCodes] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.statusCode).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [departmentFilter, setDepartmentFilter] = useState("Tümü")
   const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])
   const [approvalFeedback, setApprovalFeedback] = useState("")
@@ -207,7 +267,7 @@ export default function HrDashboard() {
   const [formMessage, setFormMessage] = useState("")
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
-  const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+  const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
   const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
@@ -251,7 +311,7 @@ export default function HrDashboard() {
   "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
   approvals: { title: "Onaylar", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
-  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kurumunuzun kadro birimlerini yönetin." },
+  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kadro birimlerini ve yeni kadro alanlarının seçeneklerini yönetin." },
   }[activeSection]
 
   function handleRoleChange(role: HrRole) {
@@ -282,6 +342,29 @@ export default function HrDashboard() {
     if (departmentFilter === departmentName) setDepartmentFilter("Tümü")
     if (form.unit === departmentName) setForm((current) => ({ ...current, unit: "" }))
     setDepartmentMessage(`${departmentName} listeden kaldırıldı. Mevcut kadro kayıtları değişmeden kalır.`)
+  }
+
+  function addCatalogValue(value: string, setValues: React.Dispatch<React.SetStateAction<string[]>>) {
+    if (!isAdmin) return
+    setValues((current) => [...current, value].sort((first, second) => first.localeCompare(second, "tr-TR")))
+  }
+
+  function handleRemovePositionTitle(value: string) {
+    if (!isAdmin) return
+    setPositionTitles((current) => current.filter((item) => item !== value))
+    if (!editingSlotId && form.title === value) setForm((current) => ({ ...current, title: "" }))
+  }
+
+  function handleRemoveServiceClass(value: string) {
+    if (!isAdmin) return
+    setServiceClasses((current) => current.filter((item) => item !== value))
+    if (!editingSlotId && form.serviceClass === value) setForm((current) => ({ ...current, serviceClass: "" }))
+  }
+
+  function handleRemoveStatusCode(value: string) {
+    if (!isAdmin) return
+    setStatusCodes((current) => current.filter((item) => item !== value))
+    if (!editingSlotId && form.statusCode === value) setForm((current) => ({ ...current, statusCode: "" }))
   }
 
   function submitForApproval(payload: ApprovalPayload) {
@@ -462,7 +545,7 @@ export default function HrDashboard() {
   }
 
   function resetForm() {
-    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
     setEditingSlotId(null)
   }
 
@@ -596,6 +679,18 @@ export default function HrDashboard() {
                     <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Birimi listeden kaldırmak mevcut kadro kayıtlarını silmez; yalnızca yeni seçimlerden ve filtre seçeneklerinden çıkarır.</p>
                   </div>
                 </article>
+                <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                  <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
+                    <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p>
+                    <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Alanı Tanımları</h3>
+                    <p className="mt-1 text-[11px] text-slate-500">Kadro formundaki ünvan, hizmet sınıfı ve durum kodu seçeneklerini yönetin.</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
+                    <ParameterListManager title="Kadro Ünvanı" description="Yeni kadro tanımlarken seçilebilecek ünvanlar." inputLabel="Yeni kadro ünvanı" placeholder="Örn. Kıdemli ürün uzmanı" values={positionTitles} onAdd={(value) => addCatalogValue(value, setPositionTitles)} onRemove={handleRemovePositionTitle} />
+                    <ParameterListManager title="Hizmet Sınıfı" description="Kadro formunda kullanılacak hizmet sınıfları." inputLabel="Yeni hizmet sınıfı" placeholder="Örn. Teknik Hizmetler" values={serviceClasses} onAdd={(value) => addCatalogValue(value, setServiceClasses)} onRemove={handleRemoveServiceClass} />
+                    <ParameterListManager title="Durum Kodu" description="Kadro formunda kullanılacak durum kodları." inputLabel="Yeni durum kodu" placeholder="Örn. AKTİF-03" values={statusCodes} onAdd={(value) => addCatalogValue(value.toLocaleUpperCase("tr-TR"), setStatusCodes)} onRemove={handleRemoveStatusCode} />
+                  </div>
+                </article>
               </section>
             ) : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Sistem parametreleri yalnızca Admin rolüyle kullanılabilir.</p>
           ) : activeSection === "positions" ? (
@@ -612,15 +707,15 @@ export default function HrDashboard() {
                   <FormField label="Birimi">
                     <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{form.unit && !departmentUnits.includes(form.unit) && <option value={form.unit}>{form.unit} (mevcut kayıt)</option>}{departmentUnits.map((item) => <option key={item} value={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                   </FormField>
-                  <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Kadro Ünvanı"><FieldControl><select required aria-label="Kadro Ünvanı" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Ünvan seçin</option>{editingSlotId && form.title && !positionTitles.includes(form.title) && <option value={form.title}>{form.title} (mevcut kayıt)</option>}{positionTitles.map((title) => <option key={title} value={title}>{title}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField label="Hizmet Sınıfı"><FieldControl><input required value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} placeholder="Örn. Genel İdare Hizmetleri" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Hizmet Sınıfı"><FieldControl><select required aria-label="Hizmet Sınıfı" value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Sınıf seçin</option>{editingSlotId && form.serviceClass && !serviceClasses.includes(form.serviceClass) && <option value={form.serviceClass}>{form.serviceClass} (mevcut kayıt)</option>}{serviceClasses.map((serviceClass) => <option key={serviceClass} value={serviceClass}>{serviceClass}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                   <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Onay Tarihi"><FieldControl><input required type="date" value={form.approvalDate} onChange={(event) => setForm({ ...form, approvalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
-                  <FormField label="Durum Kodu"><FieldControl><input required maxLength={40} value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} placeholder="Örn. AKTİF-01" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Durum Kodu"><FieldControl><select required aria-label="Durum Kodu" value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Kod seçin</option>{editingSlotId && form.statusCode && !statusCodes.includes(form.statusCode) && <option value={form.statusCode}>{form.statusCode} (mevcut kayıt)</option>}{statusCodes.map((statusCode) => <option key={statusCode} value={statusCode}>{statusCode}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Boş Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.vacantCount} onChange={(event) => setForm({ ...form, vacantCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>

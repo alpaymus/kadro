@@ -185,6 +185,7 @@ export default function HrDashboard() {
   const currentUser = mockHrUsers.find((user) => user.id === currentUserId) ?? mockHrUsers[0]
   const isHrSpecialist = currentUser.role === "hr-specialist"
   const pendingApprovalCount = approvalRequests.filter((request) => request.status === "pending").length
+  const demoAssignmentSlot = slots.find((slot) => getVacantCount(slot) > 0 && !approvalRequests.some((request) => request.status === "pending" && request.payload.kind === "assignment" && request.payload.slotId === slot.id))
   const navigationItems = navigation.filter((item) => item.id !== "approvals" || currentUser.role === "hr-manager")
   const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   const [blockMessage, setBlockMessage] = useState("")
@@ -258,6 +259,33 @@ export default function HrDashboard() {
     setApprovalRequests((current) => [request, ...current])
     setApprovalFeedback("")
     return true
+  }
+
+  function createDemoAssignmentRequest() {
+    if (currentUser.role !== "hr-manager" || !demoAssignmentSlot) return
+    const specialist = mockHrUsers.find((user) => user.role === "hr-specialist")
+    if (!specialist) return
+
+    const request: HrApprovalRequest = {
+      id: `DEMO-ATAMA-${Date.now()}`,
+      payload: {
+        kind: "assignment",
+        slotId: demoAssignmentSlot.id,
+        employee: "Demo Personel",
+        dutyType: "Kadro",
+        assignmentDate: getTodayDate(),
+        assignmentNumber: `SIM-${Date.now().toString().slice(-6)}`,
+        extraStatus: "Onay simülasyonu",
+        notes: "İK Müdürü onay/red akışını denemek için oluşturuldu.",
+      },
+      submittedById: specialist.id,
+      submittedByName: specialist.name,
+      submittedAt: new Date().toISOString(),
+      status: "pending",
+    }
+
+    setApprovalRequests((current) => [request, ...current])
+    setApprovalFeedback("Örnek atama talebi oluşturuldu. Onaylarsanız doluluk oranı güncellenir; reddederseniz mevcut kadro sayıları korunur.")
   }
 
   function handleApprovalDecision(requestId: string, decision: "approved" | "rejected") {
@@ -466,7 +494,7 @@ export default function HrDashboard() {
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[11px] font-bold text-teal-800">{currentUser.initials}</span>
                 <label className="flex flex-col">
                   <span className="sr-only">Demo kullanıcı rolü seçin</span>
-                  <select aria-label="Demo kullanıcı rolü seçin" value={currentUser.id} onChange={(event) => { const selectedUser = mockHrUsers.find((user) => user.id === event.target.value); if (!selectedUser) return; setCurrentUserId(selectedUser.id); setApprovalFeedback(""); if (selectedUser.role !== "hr-manager" && activeSection === "approvals") setActiveSection("positions") }} className="max-w-[150px] cursor-pointer bg-transparent text-xs font-medium text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:max-w-none">
+                  <select aria-label="Demo kullanıcı rolü seçin" value={currentUser.id} onChange={(event) => { const selectedUser = mockHrUsers.find((user) => user.id === event.target.value); if (!selectedUser) return; setCurrentUserId(selectedUser.id); setApprovalFeedback(""); setActiveSection(selectedUser.role === "hr-manager" ? "approvals" : activeSection === "approvals" ? "positions" : activeSection) }} className="max-w-[150px] cursor-pointer bg-transparent text-xs font-medium text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:max-w-none">
                     {mockHrUsers.map((user) => <option key={user.id} value={user.id}>{user.name} · {user.roleLabel}</option>)}
                   </select>
                   <span className="hidden text-[10px] text-slate-400 sm:block">Demo kullanıcı</span>
@@ -498,7 +526,7 @@ export default function HrDashboard() {
           <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
-            <StatCard label="Dolu kadro" value={totals.filled} helper="Personel atanmış kadro" icon={UsersRound} tone="slate" />
+            <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
             <StatCard label="Bloke kadro" value={totals.blocked} helper="Geçici olarak kullanıma kapalı" icon={ShieldCheck} tone="amber" />
           </section>
 
@@ -645,7 +673,7 @@ export default function HrDashboard() {
                 <div className="overflow-x-auto"><table className="w-full min-w-[1120px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Derece</th><th scope="col" className="px-4 py-3 font-semibold">Bloke Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">İşlem Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Sebep</th><th scope="col" className="px-4 py-3 font-semibold">Açıklama</th></tr></thead><tbody className="divide-y divide-slate-100">{blockedRecords.map((record) => <tr key={record.id} className="transition-colors hover:bg-amber-50/30"><td className="whitespace-nowrap px-5 py-4 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{record.slotId}</td><td className="px-4 py-4 text-[11px] font-semibold text-slate-800">{record.title}</td><td className="px-4 py-4 text-[11px] text-slate-600">{record.department}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{record.degree}</td><td className="px-4 py-4 text-[11px] font-semibold text-amber-800">{record.count}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{record.processDate ? record.processDate.split("-").reverse().join(".") : "—"}</td><td className="px-4 py-4 text-[11px] text-slate-600">{record.reason}</td><td className="max-w-[240px] px-4 py-4 text-[11px] text-slate-500">{record.description || "—"}</td></tr>)}
                     {!blockedRecords.length && <tr><td colSpan={8} className="px-6 py-12 text-center"><div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-50 text-amber-600"><ShieldCheck aria-hidden="true" className="size-5" /></div><p className="mt-3 text-xs font-medium text-slate-700">Bloke kadro bulunmuyor</p><p className="mt-1 text-[11px] text-slate-400">Eklediğiniz bloke kayıtları burada listelenir.</p></td></tr>}
                   </tbody></table></div>
-                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {totals.blocked} kadro geçici olarak kullanıma kapalı.</div>
+                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {totals.blocked} kadro geçici olarak kullanıma kapal��.</div>
               </article>
             </section>
           ) : activeSection === "degree-change" ? (
@@ -668,7 +696,7 @@ export default function HrDashboard() {
               </article>
             </section>
           ) : activeSection === "approvals" ? (
-            currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
+            currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} canCreateDemoAssignment={Boolean(demoAssignmentSlot)} onCreateDemoAssignment={createDemoAssignmentRequest} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
           ) : (
             <section className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
               <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">

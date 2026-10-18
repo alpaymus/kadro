@@ -1,10 +1,12 @@
-import { Check, Clock3, FileCheck2, ShieldCheck, X } from "lucide-react"
+import { Check, Clock3, FileCheck2, ShieldCheck, UserPlus, X } from "lucide-react"
 import type { HrApprovalRequest, MockHrUser } from "@/components/hr-types"
 
 type HrApprovalsProps = {
   requests: HrApprovalRequest[]
   currentUser: MockHrUser
   feedback: string
+  canCreateDemoAssignment: boolean
+  onCreateDemoAssignment: () => void
   onApprove: (requestId: string) => void
   onReject: (requestId: string) => void
 }
@@ -42,7 +44,7 @@ function statusCopy(status: HrApprovalRequest["status"]) {
   return "Onay bekliyor"
 }
 
-export default function HrApprovals({ requests, currentUser, feedback, onApprove, onReject }: HrApprovalsProps) {
+export default function HrApprovals({ requests, currentUser, feedback, canCreateDemoAssignment, onCreateDemoAssignment, onApprove, onReject }: HrApprovalsProps) {
   const pendingRequests = requests.filter((request) => request.status === "pending")
   const historyRequests = requests.filter((request) => request.status !== "pending").slice().reverse()
 
@@ -55,7 +57,10 @@ export default function HrApprovals({ requests, currentUser, feedback, onApprove
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><FileCheck2 aria-hidden="true" className="size-5" /></div>
             <div><h3 id="approvals-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Onay bekleyen işlemler</h3><p className="mt-1 text-[11px] text-slate-500">İK Uzmanı tarafından gönderilen kadro işlemlerini inceleyip karara bağlayın.</p></div>
           </div>
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800"><Clock3 aria-hidden="true" className="size-3.5" />{pendingRequests.length} bekleyen işlem</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={onCreateDemoAssignment} disabled={!canCreateDemoAssignment} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-teal-200 bg-white px-3 text-[11px] font-semibold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-50"><UserPlus aria-hidden="true" className="size-3.5" />Demo atama talebi ekle</button>
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800"><Clock3 aria-hidden="true" className="size-3.5" />{pendingRequests.length} bekleyen işlem</span>
+          </div>
         </div>
 
         <div className="divide-y divide-slate-100">

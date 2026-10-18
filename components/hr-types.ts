@@ -34,7 +34,7 @@ export type BlockedRecord = {
   description: string
 }
 
-export type HrRole = "hr-specialist" | "hr-manager"
+export type HrRole = "hr-specialist" | "hr-manager" | "admin"
 
 export type MockHrUser = {
   id: string
@@ -45,8 +45,9 @@ export type MockHrUser = {
 }
 
 export const mockHrUsers: readonly MockHrUser[] = [
-  { id: "user-ik-uzmani", name: "Zeynep Arslan", initials: "ZA", role: "hr-specialist", roleLabel: "İK Uzmanı" },
+  { id: "user-ik-sorumlusu", name: "Zeynep Arslan", initials: "ZA", role: "hr-specialist", roleLabel: "İK Sorumlusu" },
   { id: "user-ik-muduru", name: "Ayşe Demir", initials: "AD", role: "hr-manager", roleLabel: "İK Müdürü" },
+  { id: "user-admin", name: "Sistem Yöneticisi", initials: "SY", role: "admin", roleLabel: "Admin" },
 ]
 
 export type ApprovalPayload =

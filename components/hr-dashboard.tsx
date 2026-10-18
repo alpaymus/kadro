@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react"
 import HrApprovals from "@/components/hr-approvals"
-import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type Slot, type SlotStatus } from "@/components/hr-types"
+import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type HrRole, type Slot, type SlotStatus } from "@/components/hr-types"
 import {
   ArrowDownToLine,
   ArrowUpRight,
@@ -48,7 +48,7 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports"
+type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "system-parameters"
 type NavigationItem = { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }
 
 const navigation: NavigationItem[] = [
@@ -58,6 +58,7 @@ const navigation: NavigationItem[] = [
   { id: "degree-change", label: "Kadro Derece Değişikliği", icon: Settings2 },
   { id: "approvals", label: "Onaylar", icon: ClipboardCheck },
   { id: "reports", label: "Raporlar", icon: FileBarChart },
+  { id: "system-parameters", label: "Sistem Parametreleri", icon: Settings2 },
 ]
 
 function BrandMark() {
@@ -180,13 +181,22 @@ export default function HrDashboard() {
   const [slots, setSlots] = useState<Slot[]>(initialSlots)
   const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
   const [currentUserId, setCurrentUserId] = useState<string>(mockHrUsers[0].id)
+  const [departmentUnits, setDepartmentUnits] = useState<string[]>(["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"])
+  const [newDepartment, setNewDepartment] = useState("")
+  const [departmentMessage, setDepartmentMessage] = useState("")
+  const [departmentFilter, setDepartmentFilter] = useState("Tümü")
   const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])
   const [approvalFeedback, setApprovalFeedback] = useState("")
   const currentUser = mockHrUsers.find((user) => user.id === currentUserId) ?? mockHrUsers[0]
   const isHrSpecialist = currentUser.role === "hr-specialist"
+  const isAdmin = currentUser.role === "admin"
   const pendingApprovalCount = approvalRequests.filter((request) => request.status === "pending").length
   const demoAssignmentSlot = slots.find((slot) => getVacantCount(slot) > 0 && !approvalRequests.some((request) => request.status === "pending" && request.payload.kind === "assignment" && request.payload.slotId === slot.id))
-  const navigationItems = navigation.filter((item) => item.id !== "approvals" || currentUser.role === "hr-manager")
+  const navigationItems = navigation.filter((item) => {
+    if (item.id === "approvals") return currentUser.role === "hr-manager"
+    if (item.id === "system-parameters") return isAdmin
+    return true
+  })
   const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   const [blockMessage, setBlockMessage] = useState("")
   const [degreeChangeSlotId, setDegreeChangeSlotId] = useState("")
@@ -230,8 +240,9 @@ export default function HrDashboard() {
   const filteredSlots = useMemo(() => slots.filter((slot) => {
     const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.serviceClass ?? ""} ${slot.degree} ${slot.statusCode ?? ""} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
     const matchesStatus = statusFilter === "Tümü" || slot.status === statusFilter
-    return matchesQuery && matchesStatus
-  }), [query, slots, statusFilter])
+    const matchesDepartment = departmentFilter === "Tümü" || slot.department === departmentFilter
+    return matchesQuery && matchesStatus && matchesDepartment
+  }), [departmentFilter, query, slots, statusFilter])
 
   const sectionCopy = {
     positions: { title: "Kadro yönetimi", subtitle: "Kurumunuzun kadro planını tek bir yerden yönetin." },
@@ -240,11 +251,42 @@ export default function HrDashboard() {
   "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
   approvals: { title: "Onaylar", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
+  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kurumunuzun kadro birimlerini yönetin." },
   }[activeSection]
+
+  function handleRoleChange(role: HrRole) {
+    const selectedUser = mockHrUsers.find((user) => user.role === role)
+    if (!selectedUser) return
+    setCurrentUserId(selectedUser.id)
+    setApprovalFeedback("")
+    setActiveSection(role === "admin" ? "system-parameters" : role === "hr-manager" ? "approvals" : "positions")
+  }
+
+  function handleAddDepartment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!isAdmin) return
+    const departmentName = newDepartment.trim()
+    if (!departmentName) return
+    if (departmentUnits.some((unit) => unit.toLocaleLowerCase("tr-TR") === departmentName.toLocaleLowerCase("tr-TR"))) {
+      setDepartmentMessage("Bu kadro birimi zaten listede bulunuyor.")
+      return
+    }
+    setDepartmentUnits((units) => [...units, departmentName].sort((first, second) => first.localeCompare(second, "tr-TR")))
+    setNewDepartment("")
+    setDepartmentMessage(`${departmentName} kadro birimlerine eklendi.`)
+  }
+
+  function handleRemoveDepartment(departmentName: string) {
+    if (!isAdmin) return
+    setDepartmentUnits((units) => units.filter((unit) => unit !== departmentName))
+    if (departmentFilter === departmentName) setDepartmentFilter("Tümü")
+    if (form.unit === departmentName) setForm((current) => ({ ...current, unit: "" }))
+    setDepartmentMessage(`${departmentName} listeden kaldırıldı. Mevcut kadro kayıtları değişmeden kalır.`)
+  }
 
   function submitForApproval(payload: ApprovalPayload) {
     if (!isHrSpecialist) {
-      setFormMessage("Bu işlem yalnızca İK Uzmanı rolüyle onaya gönderilebilir.")
+      setFormMessage("Bu işlem yalnızca İK Sorumlusu rolüyle onaya gönderilebilir.")
       return false
     }
 
@@ -493,11 +535,12 @@ export default function HrDashboard() {
               <div className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[11px] font-bold text-teal-800">{currentUser.initials}</span>
                 <label className="flex flex-col">
-                  <span className="sr-only">Demo kullanıcı rolü seçin</span>
-                  <select aria-label="Demo kullanıcı rolü seçin" value={currentUser.id} onChange={(event) => { const selectedUser = mockHrUsers.find((user) => user.id === event.target.value); if (!selectedUser) return; setCurrentUserId(selectedUser.id); setApprovalFeedback(""); setActiveSection(selectedUser.role === "hr-manager" ? "approvals" : activeSection === "approvals" ? "positions" : activeSection) }} className="max-w-[150px] cursor-pointer bg-transparent text-xs font-medium text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:max-w-none">
-                    {mockHrUsers.map((user) => <option key={user.id} value={user.id}>{user.name} · {user.roleLabel}</option>)}
+                  <span className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Rol değiştir</span>
+                  <select aria-label="Rol değiştir" value={currentUser.role} onChange={(event) => handleRoleChange(event.target.value as HrRole)} className="max-w-[150px] cursor-pointer bg-transparent text-xs font-semibold text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:max-w-none">
+                    <option value="hr-specialist">İK Sorumlusu</option>
+                    <option value="hr-manager">İK Müdürü</option>
+                    <option value="admin">Admin</option>
                   </select>
-                  <span className="hidden text-[10px] text-slate-400 sm:block">Demo kullanıcı</span>
                 </label>
               </div>
             </div>
@@ -513,24 +556,49 @@ export default function HrDashboard() {
         <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
           <section aria-labelledby="page-title" className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold text-teal-800"><span className="size-1.5 rounded-full bg-teal-500" /> 2025 ORGANİZASYON PLANI</div>
+              {activeSection !== "system-parameters" && <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold text-teal-800"><span className="size-1.5 rounded-full bg-teal-500" /> 2025 ORGANİZASYON PLANI</div>}
               <h2 id="page-title" className="text-[26px] font-semibold tracking-[-0.04em] text-slate-900 sm:text-[30px]">{sectionCopy.title}</h2>
               <p className="mt-1.5 text-[13px] text-slate-500">{sectionCopy.subtitle}</p>
             </div>
-            <div className="flex items-center gap-2">
+            {activeSection !== "system-parameters" && <div className="flex items-center gap-2">
               <button type="button" onClick={handleExport} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"><ArrowDownToLine aria-hidden="true" className="size-3.5" /> Dışa aktar</button>
               <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>
-            </div>
+            </div>}
           </section>
 
-          <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {activeSection !== "system-parameters" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
             <StatCard label="Bloke kadro" value={totals.blocked} helper="Geçici olarak kullanıma kapalı" icon={ShieldCheck} tone="amber" />
-          </section>
+          </section>}
 
-          {activeSection === "positions" ? (
+          {activeSection === "system-parameters" ? (
+            isAdmin ? (
+              <section aria-labelledby="department-units-title" className="grid grid-cols-1 items-start gap-5">
+                <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                  <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
+                    <div><p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Yönetim alanı</p><h3 id="department-units-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Birimleri Yönetimi</h3><p className="mt-1 text-[11px] text-slate-500">Birim listesindeki değişiklikler yeni kadro formu ve tablo filtresine anında yansır.</p></div>
+                  </div>
+                  <form onSubmit={handleAddDepartment} className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:px-6">
+                    <FormField label="Yeni departman adı">
+                      <FieldControl className="h-11 rounded-xl bg-slate-50/70 px-3.5"><input required maxLength={80} value={newDepartment} onChange={(event) => setNewDepartment(event.target.value)} placeholder="Örn: Pazarlama Daire Bşk." className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl>
+                    </FormField>
+                    <button type="submit" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20"><Plus aria-hidden="true" className="size-4" />Birim ekle</button>
+                  </form>
+                  {departmentMessage && <p role="status" className="mx-5 mt-4 rounded-lg border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800 sm:mx-6">{departmentMessage}</p>}
+                  <div className="p-5 sm:px-6 sm:py-6">
+                    <div className="mb-3 flex items-center justify-between gap-3"><h4 className="text-xs font-semibold text-slate-800">Tanımlı kadro birimleri</h4><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">{departmentUnits.length} birim</span></div>
+                    {departmentUnits.length ? <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                      {departmentUnits.map((unit) => <li key={unit} className="flex items-center justify-between gap-4 px-4 py-3"><span className="min-w-0 truncate text-[13px] font-medium text-slate-700">{unit}</span><button type="button" onClick={() => handleRemoveDepartment(unit)} aria-label={`${unit} birimini sil`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-4" /></button></li>)}
+                    </ul> : <p className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-xs text-slate-500">Henüz kadro birimi yok. Yeni departman ekleyerek başlayın.</p>}
+                    <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Birimi listeden kaldırmak mevcut kadro kayıtlarını silmez; yalnızca yeni seçimlerden ve filtre seçeneklerinden çıkarır.</p>
+                  </div>
+                </article>
+              </section>
+            ) : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Sistem parametreleri yalnızca Admin rolüyle kullanılabilir.</p>
+          ) : activeSection === "positions" ? (
           <section className="grid grid-cols-1 items-start gap-5">
             <article id="yeni-kadro" className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] xl:max-w-[760px]">
               <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
@@ -542,7 +610,7 @@ export default function HrDashboard() {
               <form id="new-cadre-form" onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Birimi">
-                    <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
+                    <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{form.unit && !departmentUnits.includes(form.unit) && <option value={form.unit}>{form.unit} (mevcut kayıt)</option>}{departmentUnits.map((item) => <option key={item} value={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                   </FormField>
                   <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
                 </div>
@@ -573,6 +641,7 @@ export default function HrDashboard() {
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="flex h-8 min-w-[155px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 sm:flex-none"><Search aria-hidden="true" className="size-3.5 shrink-0 text-slate-400" /><span className="sr-only">Kadrolarda ara</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kadrolarda ara..." className="w-full min-w-0 bg-transparent text-[11px] text-slate-700 outline-none placeholder:text-slate-400" /></label>
                   <label className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[11px] text-slate-600"><SlidersHorizontal aria-hidden="true" className="size-3.5 text-slate-400" /><span className="sr-only">Duruma göre filtrele</span><select aria-label="Duruma göre filtrele" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="max-w-[82px] bg-transparent font-medium outline-none"><option>Tümü</option><option>Boş</option><option>Dolu</option><option>Bloke</option></select></label>
+                  <label className="flex h-8 items-center rounded-lg border border-slate-200 px-2.5 text-[11px] text-slate-600"><span className="sr-only">Kadro birimine göre filtrele</span><select aria-label="Kadro birimine göre filtrele" value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="max-w-[150px] bg-transparent font-medium outline-none"><option value="Tümü">Tüm birimler</option>{departmentUnits.map((unit) => <option key={unit} value={unit}>{unit}</option>)}</select></label>
                 </div>
               </div>
               <div className="overflow-x-auto">

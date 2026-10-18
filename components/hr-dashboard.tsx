@@ -26,7 +26,11 @@ type Slot = {
   title: string
   department: string
   degree: string
-  budgetCode: string
+  serviceClassApprovalDate?: string
+  vacantCount?: number
+  filledCount?: number
+  statusCode?: string
+  budgetCode?: string
   status: SlotStatus
   employee: string | null
   initials: string | null
@@ -163,31 +167,40 @@ function FieldControl({ children, className = "" }: { children: React.ReactNode;
   return <span className={`flex h-10 items-center rounded-lg border border-slate-200 bg-white px-3 transition focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/15 ${className}`}>{children}</span>
 }
 
+function getVacantCount(slot: Slot) {
+  return slot.vacantCount ?? (slot.status === "Boş" ? 1 : 0)
+}
+
+function getFilledCount(slot: Slot) {
+  return slot.filledCount ?? (slot.status === "Dolu" ? 1 : 0)
+}
+
 export default function HrDashboard() {
   const [slots, setSlots] = useState(initialSlots)
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("Tümü")
   const [formMessage, setFormMessage] = useState("")
-  const [form, setForm] = useState({ department: "", title: "", degree: "", budgetCode: "" })
+  const [form, setForm] = useState({ unit: "", title: "", degree: "", serviceClassApprovalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
   const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
   const [assignmentMessage, setAssignmentMessage] = useState("")
 
-  const totals = useMemo(() => ({
-    total: slots.length,
-    vacant: slots.filter((slot) => slot.status === "Boş").length,
-    blocked: slots.filter((slot) => slot.status === "Bloke").length,
-  }), [slots])
-  const vacantSlots = useMemo(() => slots.filter((slot) => slot.status === "Boş"), [slots])
+  const totals = useMemo(() => {
+    const vacant = slots.reduce((sum, slot) => sum + getVacantCount(slot), 0)
+    const filled = slots.reduce((sum, slot) => sum + getFilledCount(slot), 0)
+    const blocked = slots.filter((slot) => slot.status === "Bloke").length
+    return { total: vacant + filled + blocked, vacant, filled, blocked }
+  }, [slots])
+  const vacantSlots = useMemo(() => slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke"), [slots])
   const departmentStats = useMemo(() => {
     const counts = new Map<string, number>()
-    slots.forEach((slot) => counts.set(slot.department, (counts.get(slot.department) ?? 0) + 1))
+    slots.forEach((slot) => counts.set(slot.department, (counts.get(slot.department) ?? 0) + getVacantCount(slot) + getFilledCount(slot) + (slot.status === "Bloke" ? 1 : 0)))
     return [...counts.entries()].sort((a, b) => b[1] - a[1])
   }, [slots])
 
   const filteredSlots = useMemo(() => slots.filter((slot) => {
-    const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
+    const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.degree} ${slot.statusCode ?? ""} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
     const matchesStatus = statusFilter === "Tümü" || slot.status === statusFilter
     return matchesQuery && matchesStatus
   }), [query, slots, statusFilter])
@@ -202,22 +215,29 @@ export default function HrDashboard() {
     event.preventDefault()
     const name = employeeName.trim()
     if (!assignmentSlotId || !name) return
-    setSlots((current) => current.map((slot) => slot.id === assignmentSlotId ? {
-      ...slot,
-      status: "Dolu",
-      employee: name,
-      initials: name.split(/\\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"),
-      avatarTone: "bg-teal-100 text-teal-700",
-    } : slot))
+    setSlots((current) => current.map((slot) => {
+      if (slot.id !== assignmentSlotId) return slot
+      const nextVacantCount = Math.max(0, getVacantCount(slot) - 1)
+      const nextFilledCount = getFilledCount(slot) + 1
+      return {
+        ...slot,
+        status: nextVacantCount > 0 ? "Boş" : "Dolu",
+        vacantCount: nextVacantCount,
+        filledCount: nextFilledCount,
+        employee: name,
+        initials: name.split(/\\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"),
+        avatarTone: "bg-teal-100 text-teal-700",
+      }
+    }))
     setAssignmentMessage(`${name}, seçilen kadroya başarıyla atandı.`)
     setEmployeeName("")
     setAssignmentSlotId("")
   }
 
   function handleExport() {
-    const columns = ["Kadro ID", "Unvan", "Departman", "Derece", "Bütçe Kodu", "Durum", "Atanmış Personel"]
-    const rows = slots.map((slot) => [slot.id, slot.title, slot.department, slot.degree, slot.budgetCode, slot.status, slot.employee ?? "Atama bekliyor"])
-    const csv = "\\uFEFF" + [columns, ...rows].map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\\r\\n")
+    const columns = ["Kadro ID", "Birimi", "Kadro Ünvanı", "Kadro Derecesi", "Hizmet Sınıfı Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"]
+    const rows = slots.map((slot) => [slot.id, slot.department, slot.title, slot.degree, slot.serviceClassApprovalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])
+    const csv = "\uFEFF" + [columns, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const link = document.createElement("a")
     link.href = url
@@ -229,18 +249,24 @@ export default function HrDashboard() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextId = `KDR-2025-${String(slots.length + 1).padStart(3, "0")}`
+    const vacantCount = Number(form.vacantCount)
+    const filledCount = Number(form.filledCount)
+    const status: SlotStatus = vacantCount > 0 ? "Boş" : filledCount > 0 ? "Dolu" : "Bloke"
     setSlots((current) => [{
       id: nextId,
       title: form.title.trim(),
-      department: form.department,
+      department: form.unit,
       degree: form.degree,
-      budgetCode: form.budgetCode.trim().toLocaleUpperCase("tr-TR"),
-      status: "Boş",
+      serviceClassApprovalDate: form.serviceClassApprovalDate,
+      vacantCount,
+      filledCount,
+      statusCode: form.statusCode.trim().toLocaleUpperCase("tr-TR"),
+      status,
       employee: null,
       initials: null,
       avatarTone: "",
     }, ...current])
-    setForm({ department: "", title: "", degree: "", budgetCode: "" })
+    setForm({ unit: "", title: "", degree: "", serviceClassApprovalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
     setFormMessage(`${nextId} numaralı kadro başarıyla oluşturuldu.`)
   }
 
@@ -291,9 +317,10 @@ export default function HrDashboard() {
             </div>
           </section>
 
-          <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+          <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
+            <StatCard label="Dolu kadro" value={totals.filled} helper="Personel atanmış kadro" icon={UsersRound} tone="slate" />
             <StatCard label="Bloke kadro" value={totals.blocked} helper="Geçici olarak kullanıma kapalı" icon={ShieldCheck} tone="amber" />
           </section>
 
@@ -307,18 +334,23 @@ export default function HrDashboard() {
                 </div>
               </div>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
-                <FormField label="Departman">
-                  <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.department} onChange={(event) => setForm({ ...form, department: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Departman seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
+                <FormField label="Birimi">
+                  <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                 </FormField>
-                <FormField label="Unvan"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField label="Derece"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
-                  <FormField label="Bütçe kodu"><FieldControl><input required value={form.budgetCode} onChange={(event) => setForm({ ...form, budgetCode: event.target.value })} placeholder="Örn. BR-2401" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Hizmet Sınıfı Onay Tarihi"><FieldControl><input required type="date" value={form.serviceClassApprovalDate} onChange={(event) => setForm({ ...form, serviceClassApprovalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                 </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField label="Boş Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.vacantCount} onChange={(event) => setForm({ ...form, vacantCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                  <FormField label="Dolu Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.filledCount} onChange={(event) => setForm({ ...form, filledCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                </div>
+                <FormField label="Durum Kodu"><FieldControl><input required maxLength={40} value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} placeholder="Örn. AKTİF-01" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
                 <div className="mt-1 border-t border-slate-100 pt-4">
                   {formMessage && <p role="status" className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-teal-700"><Check aria-hidden="true" className="size-3.5" />{formMessage}</p>}
                   <button type="submit" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Plus aria-hidden="true" className="size-3.5" /> Kadroyu oluştur</button>
-                  <p className="mt-3 text-center text-[10px] text-slate-400">Oluşturulan kadro varsayılan olarak boş statüsünde açılır.</p>
+                  <p className="mt-3 text-center text-[10px] text-slate-400">Durum, boş ve dolu kadro sayılarına göre belirlenir.</p>
                 </div>
               </form>
             </article>
@@ -332,16 +364,18 @@ export default function HrDashboard() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[650px] border-collapse text-left">
-                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Unvan</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th><th scope="col" className="px-4 py-3 font-semibold">Atanmış personel</th></tr></thead>
+                <table className="w-full min-w-[940px] border-collapse text-left">
+                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th><th scope="col" className="px-4 py-3 font-semibold">Boş / Dolu</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Atanmış personel</th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredSlots.map((slot) => <tr key={slot.id} className="transition-colors hover:bg-slate-50/70">
                       <td className="whitespace-nowrap px-5 py-3.5 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{slot.id}</td>
-                      <td className="px-4 py-3.5"><p className="whitespace-nowrap text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 text-[10px] text-slate-400">{slot.department} <span className="px-0.5 text-slate-300">·</span> {slot.degree}</p></td>
+                      <td className="px-4 py-3.5"><p className="whitespace-nowrap text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 text-[10px] text-slate-400">{slot.department} <span className="px-0.5 text-slate-300">·</span> {slot.degree}</p><p className="mt-1 text-[10px] text-slate-400">Onay: {slot.serviceClassApprovalDate ? slot.serviceClassApprovalDate.split("-").reverse().join(".") : "—"}</p></td>
                       <td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-600"><span className="font-semibold text-teal-700">{getVacantCount(slot)}</span> boş <span className="px-0.5 text-slate-300">·</span> <span className="font-semibold text-slate-700">{getFilledCount(slot)}</span> dolu</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.statusCode ?? "—"}</td>
                       <td className="px-4 py-3.5">{slot.employee ? <div className="flex items-center gap-2"><span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div> : <span className="text-[11px] text-slate-400">—</span>}</td>
                     </tr>)}
-                    {filteredSlots.length === 0 && <tr><td colSpan={4} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
+                    {filteredSlots.length === 0 && <tr><td colSpan={6} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -366,8 +400,8 @@ export default function HrDashboard() {
               </article>
               <article className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
                 <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 className="text-[14px] font-semibold text-slate-900">Mevcut personel atamaları</h3><p className="mt-1 text-[11px] text-slate-500">Dolu kadrolarda görev yapan çalışanlar.</p></div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[580px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Personel</th><th scope="col" className="px-4 py-3 font-semibold">Kadro / unvan</th><th scope="col" className="px-4 py-3 font-semibold">Departman</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead><tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.status === "Dolu").map((slot) => <tr key={slot.id} className="hover:bg-slate-50/70"><td className="px-5 py-3.5 sm:px-6"><div className="flex items-center gap-2"><span className={`flex size-7 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone || "bg-teal-100 text-teal-700"}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div></td><td className="px-4 py-3.5"><p className="text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 font-mono text-[9px] text-slate-400">{slot.id}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.department}</td><td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td></tr>)}{slots.every((slot) => slot.status !== "Dolu") && <tr><td colSpan={4} className="px-6 py-12 text-center text-xs text-slate-500">Henüz personel ataması bulunmuyor.</td></tr>}</tbody></table></div>
-                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">{slots.filter((slot) => slot.status === "Dolu").length} aktif personel ataması</div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[580px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Personel</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead><tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.employee !== null).map((slot) => <tr key={slot.id} className="hover:bg-slate-50/70"><td className="px-5 py-3.5 sm:px-6"><div className="flex items-center gap-2"><span className={`flex size-7 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone || "bg-teal-100 text-teal-700"}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div></td><td className="px-4 py-3.5"><p className="text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 font-mono text-[9px] text-slate-400">{slot.id}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.department}</td><td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td></tr>)}{slots.every((slot) => getFilledCount(slot) === 0) && <tr><td colSpan={4} className="px-6 py-12 text-center text-xs text-slate-500">Henüz personel ataması bulunmuyor.</td></tr>}</tbody></table></div>
+                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">{totals.filled} dolu kadro sayısı</div>
               </article>
             </section>
           ) : (
@@ -375,12 +409,12 @@ export default function HrDashboard() {
               <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
                 <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><div className="flex items-start gap-3"><div className="flex size-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><FileBarChart aria-hidden="true" className="size-[18px]" /></div><div><h3 className="text-[14px] font-semibold text-slate-900">Kadro durumu</h3><p className="mt-1 text-[11px] text-slate-500">Tüm kadro slotlarının güncel dağılımı.</p></div></div></div>
                 <div className="flex flex-col gap-5 p-5 sm:px-6">
-                  {[{ label: "Dolu", value: slots.filter((slot) => slot.status === "Dolu").length, color: "bg-slate-500" }, { label: "Boş", value: totals.vacant, color: "bg-teal-500" }, { label: "Bloke", value: totals.blocked, color: "bg-amber-500" }].map((item) => <div key={item.label}><div className="mb-2 flex items-center justify-between text-[11px]"><span className="font-medium text-slate-600">{item.label}</span><span className="font-semibold text-slate-800">{item.value} <span className="font-normal text-slate-400">/ {totals.total}</span></span></div><div role="progressbar" aria-label={`${item.label} kadro oranı`} aria-valuemin={0} aria-valuemax={totals.total} aria-valuenow={item.value} className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${item.color}`} style={{ width: `${totals.total ? (item.value / totals.total) * 100 : 0}%` }} /></div></div>)}
+                  {[{ label: "Dolu", value: totals.filled, color: "bg-slate-500" }, { label: "Boş", value: totals.vacant, color: "bg-teal-500" }, { label: "Bloke", value: totals.blocked, color: "bg-amber-500" }].map((item) => <div key={item.label}><div className="mb-2 flex items-center justify-between text-[11px]"><span className="font-medium text-slate-600">{item.label}</span><span className="font-semibold text-slate-800">{item.value} <span className="font-normal text-slate-400">/ {totals.total}</span></span></div><div role="progressbar" aria-label={`${item.label} kadro oranı`} aria-valuemin={0} aria-valuemax={totals.total} aria-valuenow={item.value} className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${item.color}`} style={{ width: `${totals.total ? (item.value / totals.total) * 100 : 0}%` }} /></div></div>)}
                 </div>
-                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Kadro kullanım oranı: <span className="font-semibold text-slate-700">{totals.total ? Math.round((slots.filter((slot) => slot.status === "Dolu").length / totals.total) * 100) : 0}%</span></div>
+                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Kadro kullanım oranı: <span className="font-semibold text-slate-700">{totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}%</span></div>
               </article>
               <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-                <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 className="text-[14px] font-semibold text-slate-900">Departmanlara göre dağılım</h3><p className="mt-1 text-[11px] text-slate-500">Kadro sayılarının organizasyon birimlerine göre görünümü.</p></div>
+                <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 className="text-[14px] font-semibold text-slate-900">Birime göre dağılım</h3><p className="mt-1 text-[11px] text-slate-500">Kadro sayılarının organizasyon birimlerine göre görünümü.</p></div>
                 <div className="flex flex-col gap-4 p-5 sm:px-6">{departmentStats.map(([department, count]) => <div key={department}><div className="mb-1.5 flex items-center justify-between text-[11px]"><span className="font-medium text-slate-600">{department}</span><span className="font-semibold text-slate-800">{count}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-500" style={{ width: `${totals.total ? (count / totals.total) * 100 : 0}%` }} /></div></div>)}</div>
                 <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Rapor, kadro ekranındaki güncel verilerden oluşturulur.</div>
               </article>

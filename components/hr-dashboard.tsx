@@ -80,12 +80,13 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "positions" | "assignments" | "blocked" | "reports"
+type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "reports"
 
 const navigation: { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }[] = [
   { id: "positions", label: "Kadro Yönetimi", icon: BriefcaseBusiness },
   { id: "assignments", label: "Personel Atama", icon: UsersRound },
   { id: "blocked", label: "Bloke Kadro", icon: ShieldCheck },
+  { id: "degree-change", label: "Kadro Derece Değişikliği", icon: Settings2 },
   { id: "reports", label: "Raporlar", icon: FileBarChart },
 ]
 
@@ -209,6 +210,9 @@ export default function HrDashboard() {
   const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
   const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   const [blockMessage, setBlockMessage] = useState("")
+  const [degreeChangeSlotId, setDegreeChangeSlotId] = useState("")
+  const [newDegree, setNewDegree] = useState("")
+  const [degreeChangeMessage, setDegreeChangeMessage] = useState("")
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("Tümü")
   const [formMessage, setFormMessage] = useState("")
@@ -234,6 +238,9 @@ export default function HrDashboard() {
   const vacantSlots = useMemo(() => slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke"), [slots])
   const blockableSlots = useMemo(() => slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke"), [slots])
   const selectedBlockSlot = slots.find((slot) => slot.id === blockForm.slotId)
+  const degreeChangeSlots = useMemo(() => slots.filter((slot) => slot.employee && getFilledCount(slot) > 0), [slots])
+  const selectedDegreeChangeSlot = degreeChangeSlots.find((slot) => slot.id === degreeChangeSlotId)
+  const degreeOptions = Array.from({ length: 15 }, (_, index) => `${index + 1}. Derece`)
   const departmentStats = useMemo(() => {
     const counts = new Map<string, number>()
     slots.forEach((slot) => counts.set(slot.department, (counts.get(slot.department) ?? 0) + getVacantCount(slot) + getFilledCount(slot)))
@@ -251,6 +258,7 @@ export default function HrDashboard() {
     positions: { title: "Kadro yönetimi", subtitle: "Kurumunuzun kadro planını tek bir yerden yönetin." },
   assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
   blocked: { title: "Bloke Kadro", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
+  "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
   }[activeSection]
 
@@ -285,6 +293,20 @@ export default function HrDashboard() {
     }])
     setBlockMessage(`${slot.title} kadrosundan ${count} adet bloke edildi.`)
     setBlockForm({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
+  }
+
+  function handleDegreeChangeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const slot = degreeChangeSlots.find((item) => item.id === degreeChangeSlotId)
+    if (!slot || !newDegree || newDegree === slot.degree) {
+      setDegreeChangeMessage("Lütfen kadro için mevcut dereceden farklı yeni bir derece seçin.")
+      return
+    }
+
+    setSlots((current) => current.map((item) => item.id === slot.id ? { ...item, degree: newDegree } : item))
+    setDegreeChangeMessage(`${slot.title} kadrosunun derecesi ${newDegree} olarak güncellendi.`)
+    setDegreeChangeSlotId("")
+    setNewDegree("")
   }
 
   function handleAssignment(event: FormEvent<HTMLFormElement>) {
@@ -588,6 +610,25 @@ export default function HrDashboard() {
                     {!blockedRecords.length && <tr><td colSpan={8} className="px-6 py-12 text-center"><div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-50 text-amber-600"><ShieldCheck aria-hidden="true" className="size-5" /></div><p className="mt-3 text-xs font-medium text-slate-700">Bloke kadro bulunmuyor</p><p className="mt-1 text-[11px] text-slate-400">Eklediğiniz bloke kayıtları burada listelenir.</p></td></tr>}
                   </tbody></table></div>
                 <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {totals.blocked} kadro geçici olarak kullanıma kapalı.</div>
+              </article>
+            </section>
+          ) : activeSection === "degree-change" ? (
+            <section aria-labelledby="degree-change-title" className="grid grid-cols-1 items-start gap-5">
+              <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
+                  <div><h3 id="degree-change-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Derece Değişikliği</h3><p className="mt-1 text-[11px] text-slate-500">Personelin mevcut kadro derecesini yeni bir dereceyle güncelleyin.</p></div>
+                </div>
+                <form onSubmit={handleDegreeChangeSubmit} className="flex flex-col gap-5 p-5 sm:p-6">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <FormField label="Kadro"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><select required value={degreeChangeSlotId} onChange={(event) => { setDegreeChangeSlotId(event.target.value); setNewDegree(""); setDegreeChangeMessage("") }} className="w-full appearance-none bg-transparent text-[13px] text-slate-700 outline-none"><option value="">Kadro seçin</option>{degreeChangeSlots.map((slot) => <option key={slot.id} value={slot.id}>{slot.title} · {slot.id}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                    <FormField label="Personel Adı ve Soyadı"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-100/80 px-3.5"><input readOnly aria-label="Seçilen kadrodaki personel adı ve soyadı" value={selectedDegreeChangeSlot?.employee ?? "Kadro seçilmedi"} className="w-full bg-transparent text-[13px] font-medium text-slate-600 outline-none" /></FieldControl></FormField>
+                    <FormField label="Kadro Derecesi"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-100/80 px-3.5"><input readOnly aria-label="Seçilen kadronun mevcut derecesi" value={selectedDegreeChangeSlot?.degree ?? "—"} className="w-full bg-transparent text-[13px] font-medium text-slate-600 outline-none" /></FieldControl></FormField>
+                    <FormField label="Yeni Kadro Derecesi"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><select required disabled={!selectedDegreeChangeSlot} value={newDegree} onChange={(event) => setNewDegree(event.target.value)} className="w-full appearance-none bg-transparent text-[13px] text-slate-700 outline-none disabled:cursor-not-allowed disabled:text-slate-400"><option value="">Yeni derece seçin</option>{degreeOptions.filter((degree) => degree !== selectedDegreeChangeSlot?.degree).map((degree) => <option key={degree} value={degree}>{degree}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                  </div>
+                  {degreeChangeMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{degreeChangeMessage}</p>}
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Personel bilgileri seçilen dolu kadrodan otomatik olarak getirilir.</p><button type="submit" disabled={!selectedDegreeChangeSlot || !newDegree || newDegree === selectedDegreeChangeSlot?.degree} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><Check aria-hidden="true" className="size-4" />Dereceyi güncelle</button></div>
+                </form>
               </article>
             </section>
           ) : (

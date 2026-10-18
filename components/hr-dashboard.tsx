@@ -47,6 +47,24 @@ type Slot = {
   avatarTone: string
 }
 
+type BlockedRecord = {
+  id: string
+  slotId: string
+  title: string
+  department: string
+  degree: string
+  count: number
+  processDate: string
+  reason: string
+  description: string
+}
+
+function getTodayDate() {
+  const today = new Date()
+  today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
+  return today.toISOString().slice(0, 10)
+}
+
 const initialSlots: Slot[] = [
   { id: "KDR-2025-001", title: "Kıdemli Ürün Tasarımcısı", department: "Ürün & Tasarım", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "AKTİF-01", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
   { id: "KDR-2025-002", title: "İK İş Ortağı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
@@ -188,6 +206,9 @@ function getFilledCount(slot: Slot) {
 
 export default function HrDashboard() {
   const [slots, setSlots] = useState(initialSlots)
+  const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
+  const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
+  const [blockMessage, setBlockMessage] = useState("")
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("Tümü")
   const [formMessage, setFormMessage] = useState("")
@@ -207,15 +228,18 @@ export default function HrDashboard() {
   const totals = useMemo(() => {
     const vacant = slots.reduce((sum, slot) => sum + getVacantCount(slot), 0)
     const filled = slots.reduce((sum, slot) => sum + getFilledCount(slot), 0)
-    const blocked = slots.filter((slot) => slot.status === "Bloke").length
+    const blocked = blockedRecords.reduce((sum, record) => sum + record.count, 0)
     return { total: vacant + filled + blocked, vacant, filled, blocked }
-  }, [slots])
+  }, [blockedRecords, slots])
   const vacantSlots = useMemo(() => slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke"), [slots])
+  const blockableSlots = useMemo(() => slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke"), [slots])
+  const selectedBlockSlot = slots.find((slot) => slot.id === blockForm.slotId)
   const departmentStats = useMemo(() => {
     const counts = new Map<string, number>()
-    slots.forEach((slot) => counts.set(slot.department, (counts.get(slot.department) ?? 0) + getVacantCount(slot) + getFilledCount(slot) + (slot.status === "Bloke" ? 1 : 0)))
+    slots.forEach((slot) => counts.set(slot.department, (counts.get(slot.department) ?? 0) + getVacantCount(slot) + getFilledCount(slot)))
+    blockedRecords.forEach((record) => counts.set(record.department, (counts.get(record.department) ?? 0) + record.count))
     return [...counts.entries()].sort((a, b) => b[1] - a[1])
-  }, [slots])
+  }, [blockedRecords, slots])
 
   const filteredSlots = useMemo(() => slots.filter((slot) => {
     const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.serviceClass ?? ""} ${slot.degree} ${slot.statusCode ?? ""} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
@@ -229,6 +253,39 @@ export default function HrDashboard() {
   blocked: { title: "Bloke Kadro", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
   }[activeSection]
+
+  function handleBlockSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const slot = slots.find((item) => item.id === blockForm.slotId)
+    const count = Number(blockForm.blockCount)
+    const availableCount = slot ? getVacantCount(slot) : 0
+    const reason = blockForm.reason.trim()
+
+    if (!slot || !Number.isInteger(count) || count < 1 || count > availableCount || !blockForm.processDate || !reason) {
+      setBlockMessage("Lütfen geçerli bir kadro, bloke sayısı, işlem tarihi ve sebep girin.")
+      return
+    }
+
+    const remainingVacant = availableCount - count
+    setSlots((current) => current.map((item) => item.id !== slot.id ? item : {
+      ...item,
+      vacantCount: remainingVacant,
+      status: remainingVacant > 0 ? "Boş" : getFilledCount(item) > 0 ? "Dolu" : "Bloke",
+    }))
+    setBlockedRecords((current) => [...current, {
+      id: `${slot.id}-BLK-${Date.now()}`,
+      slotId: slot.id,
+      title: slot.title,
+      department: slot.department,
+      degree: slot.degree,
+      count,
+      processDate: blockForm.processDate,
+      reason,
+      description: blockForm.description.trim(),
+    }])
+    setBlockMessage(`${slot.title} kadrosundan ${count} adet bloke edildi.`)
+    setBlockForm({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
+  }
 
   function handleAssignment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -506,24 +563,31 @@ export default function HrDashboard() {
               </article>
             </section>
           ) : activeSection === "blocked" ? (
-            <section aria-labelledby="blocked-slots-title" className="grid grid-cols-1 items-start gap-5">
-              <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
-                <div className="flex flex-col gap-3 border-b border-amber-100 bg-gradient-to-br from-amber-50/80 via-white to-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-white text-amber-700 shadow-sm"><ShieldCheck aria-hidden="true" className="size-5" /></div>
-                    <div><h3 id="blocked-slots-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Bloke kadrolar</h3><p className="mt-1 text-[11px] text-slate-500">Kullanıma kapalı kadroların güncel listesi.</p></div>
+            <section aria-labelledby="blocked-entry-title" className="grid grid-cols-1 items-start gap-5">
+              <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                <div className="flex items-start gap-3.5 border-b border-amber-100 bg-gradient-to-br from-amber-50/80 via-white to-white px-5 py-5 sm:px-6">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-white text-amber-700 shadow-sm"><ShieldCheck aria-hidden="true" className="size-5" /></div>
+                  <div><h3 id="blocked-entry-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Bloke Kadro Ekleme</h3><p className="mt-1 text-[11px] text-slate-500">Boş kadro sayısından bloke edilecek miktarı belirleyin.</p></div>
+                </div>
+                <form onSubmit={handleBlockSubmit} className="flex flex-col gap-5 p-5 sm:p-6">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <FormField label="Kadro"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><select required value={blockForm.slotId} onChange={(event) => setBlockForm((current) => ({ ...current, slotId: event.target.value, blockCount: "1" }))} className="w-full appearance-none bg-transparent text-[13px] text-slate-700 outline-none"><option value="">Kadro seçin</option>{slots.filter((slot) => getVacantCount(slot) > 0 && slot.status !== "Bloke").map((slot) => <option key={slot.id} value={slot.id}>{slot.title} · {slot.id}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                    <FormField label="Boş Kadro Sayısı"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-100/80 px-3.5"><input readOnly aria-label="Seçilen kadronun boş kadro sayısı" value={selectedBlockSlot ? getVacantCount(selectedBlockSlot) : "—"} className="w-full bg-transparent text-[13px] font-semibold text-slate-600 outline-none" /></FieldControl></FormField>
+                    <FormField label="Bloke Edilecek Kadro Sayısı"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><input required type="number" min={1} max={selectedBlockSlot ? getVacantCount(selectedBlockSlot) : undefined} disabled={!selectedBlockSlot} value={blockForm.blockCount} onChange={(event) => setBlockForm((current) => ({ ...current, blockCount: event.target.value }))} className="w-full bg-transparent text-[13px] text-slate-700 outline-none disabled:cursor-not-allowed disabled:text-slate-400" /></FieldControl></FormField>
+                    <FormField label="İşlem Tarihi"><FieldControl className="h-11 min-w-0 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><input required type="date" value={blockForm.processDate} onChange={(event) => setBlockForm((current) => ({ ...current, processDate: event.target.value }))} className="w-full min-w-0 bg-transparent text-[13px] text-slate-700 outline-none" /></FieldControl></FormField>
+                    <FormField label="Sebep"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><input required maxLength={120} value={blockForm.reason} onChange={(event) => setBlockForm((current) => ({ ...current, reason: event.target.value }))} placeholder="Bloke sebebini girin" className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                    <FormField label="Açıklama"><textarea maxLength={500} rows={1} value={blockForm.description} onChange={(event) => setBlockForm((current) => ({ ...current, description: event.target.value }))} placeholder="İsteğe bağlı açıklama ekleyin" className="min-h-11 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/10" /></FormField>
                   </div>
-                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-amber-800"><span className="size-1.5 rounded-full bg-amber-500" />{slots.filter((slot) => slot.status === "Bloke").length} bloke kadro</span>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] border-collapse text-left">
-                    <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Derece</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead>
-                    <tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.status === "Bloke").map((slot) => <tr key={slot.id} className="transition-colors hover:bg-amber-50/30"><td className="whitespace-nowrap px-5 py-4 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{slot.id}</td><td className="px-4 py-4 text-[11px] font-semibold text-slate-800">{slot.title}</td><td className="px-4 py-4 text-[11px] text-slate-600">{slot.department}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{slot.degree}</td><td className="px-4 py-4 font-mono text-[10px] text-slate-600">{slot.statusCode || "—"}</td><td className="px-4 py-4"><StatusBadge status={slot.status} /></td></tr>)}
-                      {slots.every((slot) => slot.status !== "Bloke") && <tr><td colSpan={6} className="px-6 py-12 text-center"><div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-50 text-amber-600"><ShieldCheck aria-hidden="true" className="size-5" /></div><p className="mt-3 text-xs font-medium text-slate-700">Bloke kadro bulunmuyor</p><p className="mt-1 text-[11px] text-slate-400">Bloke edilen kadrolar bu listede görüntülenir.</p></td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {slots.filter((slot) => slot.status === "Bloke").length} kadro geçici olarak kullanıma kapalı.</div>
+                  {blockMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{blockMessage}</p>}
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Bloke edilen miktar seçilen kadronun boş sayısından düşülür.</p><button type="submit" disabled={!blockableSlots.length || !blockForm.slotId || !blockForm.reason.trim() || !Number.isInteger(Number(blockForm.blockCount)) || Number(blockForm.blockCount) < 1 || Number(blockForm.blockCount) > (selectedBlockSlot ? getVacantCount(selectedBlockSlot) : 0)} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-amber-900/10 transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><ShieldCheck aria-hidden="true" className="size-4" />Bloke kadro ekle</button></div>
+                </form>
+              </article>
+              <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><h3 className="text-[14px] font-semibold text-slate-900">Bloke kadrolar</h3><p className="mt-1 text-[11px] text-slate-500">İşlem geçmişi ve bloke edilen kadro miktarları.</p></div><span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800"><span className="size-1.5 rounded-full bg-amber-500" />{totals.blocked} bloke kadro</span></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[1120px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Derece</th><th scope="col" className="px-4 py-3 font-semibold">Bloke Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">İşlem Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Sebep</th><th scope="col" className="px-4 py-3 font-semibold">Açıklama</th></tr></thead><tbody className="divide-y divide-slate-100">{blockedRecords.map((record) => <tr key={record.id} className="transition-colors hover:bg-amber-50/30"><td className="whitespace-nowrap px-5 py-4 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{record.slotId}</td><td className="px-4 py-4 text-[11px] font-semibold text-slate-800">{record.title}</td><td className="px-4 py-4 text-[11px] text-slate-600">{record.department}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{record.degree}</td><td className="px-4 py-4 text-[11px] font-semibold text-amber-800">{record.count}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{record.processDate ? record.processDate.split("-").reverse().join(".") : "—"}</td><td className="px-4 py-4 text-[11px] text-slate-600">{record.reason}</td><td className="max-w-[240px] px-4 py-4 text-[11px] text-slate-500">{record.description || "—"}</td></tr>)}
+                    {!blockedRecords.length && <tr><td colSpan={8} className="px-6 py-12 text-center"><div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-50 text-amber-600"><ShieldCheck aria-hidden="true" className="size-5" /></div><p className="mt-3 text-xs font-medium text-slate-700">Bloke kadro bulunmuyor</p><p className="mt-1 text-[11px] text-slate-400">Eklediğiniz bloke kayıtları burada listelenir.</p></td></tr>}
+                  </tbody></table></div>
+                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {totals.blocked} kadro geçici olarak kullanıma kapalı.</div>
               </article>
             </section>
           ) : (

@@ -16,6 +16,7 @@ import {
   FileBarChart,
   Eye,
   LayoutDashboard,
+  Home,
   Pencil,
   Plus,
   Search,
@@ -48,17 +49,23 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "system-parameters"
+type DashboardSection = "workspace" | "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "system-parameters"
 type NavigationItem = { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }
+type NavigationGroup = { label: string; items: NavigationItem[] }
 
-const navigation: NavigationItem[] = [
-  { id: "positions", label: "Kadro Yönetimi", icon: BriefcaseBusiness },
-  { id: "assignments", label: "Personel Atama", icon: UsersRound },
-  { id: "blocked", label: "Bloke Kadro", icon: ShieldCheck },
-  { id: "degree-change", label: "Kadro Derece Değişikliği", icon: Settings2 },
-  { id: "approvals", label: "Onaylar", icon: ClipboardCheck },
-  { id: "reports", label: "Raporlar", icon: FileBarChart },
-  { id: "system-parameters", label: "Sistem Parametreleri", icon: Settings2 },
+const navigationGroups: NavigationGroup[] = [
+  { label: "GENEL", items: [{ id: "workspace", label: "İş Masası", icon: Home }] },
+  { label: "KADRO İŞLEMLERİ", items: [
+    { id: "positions", label: "Kadro Yönetimi", icon: BriefcaseBusiness },
+    { id: "blocked", label: "Bloke Kadrolar", icon: ShieldCheck },
+    { id: "degree-change", label: "Derece Değişikliği", icon: Settings2 },
+  ] },
+  { label: "PERSONEL İŞLEMLERİ", items: [{ id: "assignments", label: "Personel Atama", icon: UsersRound }] },
+  { label: "İZLEME", items: [
+    { id: "approvals", label: "Onay Merkezi", icon: ClipboardCheck },
+    { id: "reports", label: "Raporlar", icon: FileBarChart },
+  ] },
+  { label: "SİSTEM", items: [{ id: "system-parameters", label: "Sistem Yönetimi", icon: Settings2 }] },
 ]
 
 function BrandMark() {
@@ -75,33 +82,37 @@ function BrandMark() {
   )
 }
 
-function Sidebar({ activeSection, onNavigate, navigationItems, currentUser, pendingCount }: { activeSection: DashboardSection; onNavigate: (section: DashboardSection) => void; navigationItems: NavigationItem[]; currentUser: (typeof mockHrUsers)[number]; pendingCount: number }) {
+function Sidebar({ activeSection, onNavigate, navigationGroups, currentUser, pendingCount }: { activeSection: DashboardSection; onNavigate: (section: DashboardSection) => void; navigationGroups: NavigationGroup[]; currentUser: (typeof mockHrUsers)[number]; pendingCount: number }) {
   return (
     <aside className="hidden min-h-screen w-[252px] shrink-0 flex-col border-r border-slate-800 bg-slate-950 text-slate-300 md:flex">
       <BrandMark />
       <div className="mx-5 mt-2 border-t border-slate-800" />
-      <div className="px-5 pt-7">
-        <p className="mb-3 px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500">ÇALIŞMA ALANI</p>
-        <nav aria-label="Ana menü" className="flex flex-col gap-1">
-          {navigationItems.map(({ id, label, icon: Icon }) => {
-            const current = activeSection === id
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => onNavigate(id)}
-                aria-current={current ? "page" : undefined}
-                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${current ? "bg-teal-500/12 text-teal-300 ring-1 ring-inset ring-teal-400/15" : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"}`}
-              >
-                <Icon aria-hidden="true" className={`size-[17px] ${current ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`} strokeWidth={1.8} />
-                {label}
-                {id === "approvals" && pendingCount > 0 && <span className="ml-auto rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-semibold text-amber-300">{pendingCount}</span>}
-                {current && <span className={`${id === "approvals" && pendingCount > 0 ? "" : "ml-auto"} size-1.5 rounded-full bg-teal-400`} />}
-              </button>
-            )
-          })}
-        </nav>
-      </div>
+      <nav aria-label="Ana menü" className="flex flex-col gap-5 px-5 pt-6">
+        {navigationGroups.map((group) => (
+          <div key={group.label}>
+            <p className="mb-2 px-3 text-[9px] font-semibold tracking-[0.15em] text-slate-500">{group.label}</p>
+            <div className="flex flex-col gap-1">
+              {group.items.map(({ id, label, icon: Icon }) => {
+                const current = activeSection === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onNavigate(id)}
+                    aria-current={current ? "page" : undefined}
+                    className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${current ? "bg-teal-500/12 text-teal-300 ring-1 ring-inset ring-teal-400/15" : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"}`}
+                  >
+                    <Icon aria-hidden="true" className={`size-[17px] ${current ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`} strokeWidth={1.8} />
+                    {label}
+                    {id === "approvals" && pendingCount > 0 && <span className="ml-auto rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-semibold text-amber-300">{pendingCount}</span>}
+                    {current && <span className={`${id === "approvals" && pendingCount > 0 ? "" : "ml-auto"} size-1.5 rounded-full bg-teal-400`} />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
       <div className="mt-auto px-5 pb-5">
         <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
           <div className="flex size-8 items-center justify-center rounded-lg bg-teal-400/10 text-teal-300">
@@ -153,6 +164,139 @@ function StatCard({ label, value, helper, icon: Icon, tone, trend }: {
         <span>{helper}</span>
       </div>
     </article>
+  )
+}
+
+function WorkspaceDashboard({
+  currentUser,
+  totals,
+  pendingCount,
+  myRequests,
+  departmentCount,
+  titleCount,
+  onNavigate,
+}: {
+  currentUser: (typeof mockHrUsers)[number]
+  totals: { total: number; vacant: number; filled: number; blocked: number }
+  pendingCount: number
+  myRequests: HrApprovalRequest[]
+  departmentCount: number
+  titleCount: number
+  onNavigate: (section: DashboardSection) => void
+}) {
+  const role = currentUser.role
+  const actions: { title: string; description: string; section: DashboardSection; icon: typeof BriefcaseBusiness }[] = role === "hr-specialist"
+    ? [
+        { title: "Kadro talebi oluştur", description: "Yeni kadro açın veya mevcut kaydı güncelleyin.", section: "positions", icon: BriefcaseBusiness },
+        { title: "Personel ataması", description: "Boş kadroyu personel ile eşleştirin.", section: "assignments", icon: UsersRound },
+        { title: "Bloke kadro bildir", description: "Boş kadro için bloke talebi gönderin.", section: "blocked", icon: ShieldCheck },
+        { title: "Derece değişikliği", description: "Dolu kadro için derece talebi oluşturun.", section: "degree-change", icon: Settings2 },
+      ]
+    : role === "hr-manager"
+      ? [
+          { title: "Onay kuyruğu", description: `${pendingCount} talep kararınızı bekliyor.`, section: "approvals", icon: ClipboardCheck },
+          { title: "Kadro durumunu incele", description: "Kadro kayıtlarını ve doluluk durumunu görüntüleyin.", section: "positions", icon: BriefcaseBusiness },
+          { title: "Raporları görüntüle", description: "Kurum genelindeki dağılımı inceleyin.", section: "reports", icon: FileBarChart },
+        ]
+      : [
+          { title: "Sistem tanımları", description: "Birim ve form seçeneklerini yönetin.", section: "system-parameters", icon: Settings2 },
+          { title: "Kadro kayıtları", description: "Kadro planını ve kayıtları inceleyin.", section: "positions", icon: BriefcaseBusiness },
+          { title: "Raporlar", description: "Organizasyon durumunu görüntüleyin.", section: "reports", icon: FileBarChart },
+        ]
+
+  function requestType(request: HrApprovalRequest) {
+    const labels = {
+      "slot-create": "Yeni kadro",
+      "slot-update": "Kadro güncelleme",
+      "slot-delete": "Kadro silme",
+      assignment: "Personel atama",
+      block: "Bloke kadro",
+      "degree-change": "Derece değişikliği",
+    }
+    return labels[request.payload.kind]
+  }
+
+  const visibleRequests = role === "hr-manager" ? myRequests.filter((request) => request.status === "pending") : role === "hr-specialist" ? myRequests.filter((request) => request.submittedById === currentUser.id) : []
+  const roleDescriptions = {
+    "hr-specialist": "Günlük İK işlemlerinize ve gönderdiğiniz taleplerin durumuna buradan ulaşın.",
+    "hr-manager": "Bekleyen kararları önceliklendirin, kadro durumunu tek ekrandan takip edin.",
+    admin: "Sistem tanımlarını ve organizasyon genelindeki kadro görünümünü yönetin.",
+  }
+
+  return (
+    <section aria-labelledby="workspace-title" className="flex flex-col gap-6">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-white p-5 sm:flex-row sm:items-center sm:p-7">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-teal-700">{currentUser.roleLabel} çalışma alanı</p>
+          <h2 id="workspace-title" className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[30px]">Merhaba, {currentUser.name.split(" ")[0]}</h2>
+          <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-slate-600">{roleDescriptions[role]}</p>
+        </div>
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-teal-100 bg-white text-teal-700 shadow-sm">
+          {role === "hr-manager" ? <ClipboardCheck aria-hidden="true" className="size-6" /> : role === "admin" ? <Settings2 aria-hidden="true" className="size-6" /> : <BriefcaseBusiness aria-hidden="true" className="size-6" />}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Toplam kadro" value={totals.total} helper="Organizasyon genelinde" icon={UsersRound} tone="slate" />
+        <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
+        {role === "hr-manager" ? (
+          <StatCard label="Bekleyen onay" value={pendingCount} helper="Kararınızı bekleyen talepler" icon={ClipboardCheck} tone="amber" />
+        ) : role === "admin" ? (
+          <StatCard label="Tanımlı birim" value={departmentCount} helper="Sistem birim kataloğu" icon={Building2} tone="teal" />
+        ) : (
+          <StatCard label="Taleplerim" value={myRequests.length} helper={`${myRequests.filter((request) => request.status === "pending").length} talep sonuç bekliyor`} icon={ClipboardCheck} tone="amber" />
+        )}
+        <StatCard label="Dolu kadro" value={totals.filled} helper={`Doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
+      </div>
+
+      <div>
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div><h3 className="text-[14px] font-semibold text-slate-900">Hızlı işlemler</h3><p className="mt-1 text-[11px] text-slate-500">Rolünüze göre en sık kullanılan alanlar.</p></div>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {actions.map(({ title, description, section, icon: Icon }) => (
+            <button key={section} type="button" onClick={() => onNavigate(section)} className="group flex min-h-28 items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Icon aria-hidden="true" className="size-[17px]" /></span>
+              <span className="min-w-0"><span className="block text-[12px] font-semibold text-slate-800">{title}</span><span className="mt-1.5 block text-[10px] leading-relaxed text-slate-500">{description}</span></span>
+              <ArrowUpRight aria-hidden="true" className="ml-auto size-3.5 shrink-0 text-slate-300 transition group-hover:text-teal-700" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.4fr_0.8fr]">
+        <article className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+            <div><h3 className="text-[13px] font-semibold text-slate-900">{role === "hr-manager" ? "Bekleyen talepler" : role === "admin" ? "Sistem görünümü" : "Talep takibi"}</h3><p className="mt-1 text-[10px] text-slate-500">{role === "hr-manager" ? "Onay kuyruğunuzdaki en güncel işlemler." : role === "admin" ? "Yönetilen organizasyon ve form tanımları." : "Gönderdiğiniz işlemlerin güncel durumu."}</p></div>
+            {role === "hr-manager" && <button type="button" onClick={() => onNavigate("approvals")} className="text-[10px] font-semibold text-teal-700 hover:text-teal-900">Tümünü gör</button>}
+          </div>
+          {visibleRequests.length ? (
+            <ul className="divide-y divide-slate-100">
+              {visibleRequests.slice(0, 5).map((request) => (
+                <li key={request.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                  <div className="min-w-0"><p className="truncate text-[11px] font-semibold text-slate-800">{requestType(request)}</p><p className="mt-1 truncate text-[10px] text-slate-500">{request.submittedByName} · {new Date(request.submittedAt).toLocaleDateString("tr-TR")}</p></div>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold ${request.status === "pending" ? "bg-amber-50 text-amber-800" : request.status === "approved" ? "bg-teal-50 text-teal-800" : "bg-rose-50 text-rose-700"}`}>{request.status === "pending" ? "Bekliyor" : request.status === "approved" ? "Onaylandı" : "Reddedildi"}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-5 py-8 text-center"><p className="text-[11px] font-medium text-slate-700">{role === "hr-manager" ? "Bekleyen talep yok" : role === "admin" ? "Sistem tanımları hazır" : "Henüz talep bulunmuyor"}</p><p className="mt-1 text-[10px] text-slate-500">{role === "hr-manager" ? "Yeni karar bekleyen işlemler burada görünecek." : role === "admin" ? "Birim ve form seçeneklerini Sistem Yönetimi alanından yönetin." : "Oluşturduğunuz taleplerin durumu bu alanda listelenir."}</p></div>
+          )}
+        </article>
+
+        <article className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center gap-2"><div className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><FileBarChart aria-hidden="true" className="size-4" /></div><h3 className="text-[13px] font-semibold text-slate-900">Organizasyon özeti</h3></div>
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between text-[11px]"><span className="text-slate-500">Boş kadro</span><span className="font-semibold text-teal-800">{totals.vacant}</span></div>
+            <div className="flex items-center justify-between text-[11px]"><span className="text-slate-500">Bloke kadro</span><span className="font-semibold text-amber-800">{totals.blocked}</span></div>
+            {role === "admin" && <div className="flex items-center justify-between text-[11px]"><span className="text-slate-500">Tanımlı kadro ünvanı</span><span className="font-semibold text-slate-800">{titleCount}</span></div>}
+            {role === "hr-manager" && <div className="flex items-center justify-between text-[11px]"><span className="text-slate-500">Onay bekleyen</span><span className="font-semibold text-amber-800">{pendingCount}</span></div>}
+            {role === "hr-specialist" && <div className="flex items-center justify-between text-[11px]"><span className="text-slate-500">Sonuçlanan talepler</span><span className="font-semibold text-slate-800">{myRequests.filter((request) => request.status !== "pending").length}</span></div>}
+          </div>
+          <button type="button" onClick={() => onNavigate(role === "admin" ? "system-parameters" : role === "hr-manager" ? "reports" : "positions")} className="mt-5 inline-flex items-center gap-1.5 text-[10px] font-semibold text-teal-700 hover:text-teal-900">{role === "admin" ? "Sistem yönetimine git" : role === "hr-manager" ? "Raporları aç" : "Kadro listesini aç"}<ArrowUpRight aria-hidden="true" className="size-3" /></button>
+        </article>
+      </div>
+    </section>
   )
 }
 
@@ -253,11 +397,15 @@ export default function HrDashboard() {
   const isAdmin = currentUser.role === "admin"
   const pendingApprovalCount = approvalRequests.filter((request) => request.status === "pending").length
   const demoAssignmentSlot = slots.find((slot) => getVacantCount(slot) > 0 && !approvalRequests.some((request) => request.status === "pending" && request.payload.kind === "assignment" && request.payload.slotId === slot.id))
-  const navigationItems = navigation.filter((item) => {
-    if (item.id === "approvals") return currentUser.role === "hr-manager"
-    if (item.id === "system-parameters") return isAdmin
-    return true
-  })
+  const visibleNavigationGroups = navigationGroups.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (item.id === "approvals") return currentUser.role === "hr-manager"
+      if (item.id === "system-parameters") return isAdmin
+      return true
+    }),
+  })).filter((group) => group.items.length > 0)
+  const navigationItems = visibleNavigationGroups.flatMap((group) => group.items)
   const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   const [blockMessage, setBlockMessage] = useState("")
   const [degreeChangeSlotId, setDegreeChangeSlotId] = useState("")
@@ -269,7 +417,7 @@ export default function HrDashboard() {
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
   const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
-  const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
+  const [activeSection, setActiveSection] = useState<DashboardSection>("workspace")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
   const [assignmentDutyType, setAssignmentDutyType] = useState("Kadro")
@@ -306,13 +454,14 @@ export default function HrDashboard() {
   }), [departmentFilter, query, slots, statusFilter])
 
   const sectionCopy = {
+    workspace: { title: "İş Masası", subtitle: `${currentUser.roleLabel} için görevler, özetler ve hızlı işlemler.` },
     positions: { title: "Kadro yönetimi", subtitle: "Kurumunuzun kadro planını tek bir yerden yönetin." },
-  assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
-  blocked: { title: "Bloke Kadro", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
-  "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
-  approvals: { title: "Onaylar", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
-  reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
-  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kadro birimleri ile kadro ve atama formu seçeneklerini yönetin." },
+    assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
+    blocked: { title: "Bloke kadrolar", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
+    "degree-change": { title: "Kadro derece değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
+    approvals: { title: "Onay merkezi", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
+    reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
+    "system-parameters": { title: "Sistem yönetimi", subtitle: "Kadro birimleri ile kadro ve atama formu seçeneklerini yönetin." },
   }[activeSection]
 
   function handleRoleChange(role: HrRole) {
@@ -320,7 +469,7 @@ export default function HrDashboard() {
     if (!selectedUser) return
     setCurrentUserId(selectedUser.id)
     setApprovalFeedback("")
-    setActiveSection(role === "admin" ? "system-parameters" : role === "hr-manager" ? "approvals" : "positions")
+    setActiveSection("workspace")
   }
 
   function handleAddDepartment(event: FormEvent<HTMLFormElement>) {
@@ -605,7 +754,7 @@ export default function HrDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] text-slate-900 md:flex">
-      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} navigationItems={navigationItems} currentUser={currentUser} pendingCount={pendingApprovalCount} />
+      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} navigationGroups={visibleNavigationGroups} currentUser={currentUser} pendingCount={pendingApprovalCount} />
       <main id="kadro-yonetimi" className="min-w-0 flex-1">
         <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-3.5 sm:px-8 lg:px-10">
@@ -650,20 +799,30 @@ export default function HrDashboard() {
               <h2 id="page-title" className="text-[26px] font-semibold tracking-[-0.04em] text-slate-900 sm:text-[30px]">{sectionCopy.title}</h2>
               <p className="mt-1.5 text-[13px] text-slate-500">{sectionCopy.subtitle}</p>
             </div>
-            {activeSection !== "system-parameters" && <div className="flex items-center gap-2">
+            {activeSection !== "system-parameters" && activeSection !== "workspace" && <div className="flex items-center gap-2">
               <button type="button" onClick={handleExport} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"><ArrowDownToLine aria-hidden="true" className="size-3.5" /> Dışa aktar</button>
               <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>
             </div>}
           </section>
 
-          {activeSection !== "system-parameters" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {activeSection !== "system-parameters" && activeSection !== "workspace" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
             <StatCard label="Bloke kadro" value={totals.blocked} helper="Geçici olarak kullanıma kapalı" icon={ShieldCheck} tone="amber" />
           </section>}
 
-          {activeSection === "system-parameters" ? (
+          {activeSection === "workspace" ? (
+            <WorkspaceDashboard
+              currentUser={currentUser}
+              totals={totals}
+              pendingCount={pendingApprovalCount}
+              myRequests={approvalRequests}
+              departmentCount={departmentUnits.length}
+              titleCount={positionTitles.length}
+              onNavigate={setActiveSection}
+            />
+          ) : activeSection === "system-parameters" ? (
             isAdmin ? (
               <section aria-labelledby="department-units-title" className="grid grid-cols-1 items-start gap-5">
                 <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">

@@ -62,11 +62,12 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "positions" | "assignments" | "reports"
+type DashboardSection = "positions" | "assignments" | "blocked" | "reports"
 
 const navigation: { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }[] = [
   { id: "positions", label: "Kadro Yönetimi", icon: BriefcaseBusiness },
   { id: "assignments", label: "Personel Atama", icon: UsersRound },
+  { id: "blocked", label: "Bloke Kadro", icon: ShieldCheck },
   { id: "reports", label: "Raporlar", icon: FileBarChart },
 ]
 
@@ -224,8 +225,9 @@ export default function HrDashboard() {
 
   const sectionCopy = {
     positions: { title: "Kadro yönetimi", subtitle: "Kurumunuzun kadro planını tek bir yerden yönetin." },
-    assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
-    reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
+  assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
+  blocked: { title: "Bloke Kadro", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
+  reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
   }[activeSection]
 
   function handleAssignment(event: FormEvent<HTMLFormElement>) {
@@ -501,6 +503,27 @@ export default function HrDashboard() {
                 <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 className="text-[14px] font-semibold text-slate-900">Mevcut personel atamaları</h3><p className="mt-1 text-[11px] text-slate-500">Dolu kadrolarda görev yapan çalışanlar.</p></div>
                 <div className="overflow-x-auto"><table className="w-full min-w-[1120px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Personel Adı ve Soyadı</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Kadro/Fiili Görev</th><th scope="col" className="px-4 py-3 font-semibold">Atama Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Atama No</th><th scope="col" className="px-4 py-3 font-semibold">Ekstra Durum</th><th scope="col" className="px-4 py-3 font-semibold">Açıklama</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead><tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.employee !== null).map((slot) => <tr key={slot.id} className="hover:bg-slate-50/70"><td className="px-5 py-3.5 sm:px-6"><div className="flex items-center gap-2"><span className={`flex size-7 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone || "bg-teal-100 text-teal-700"}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div></td><td className="px-4 py-3.5"><p className="text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 font-mono text-[9px] text-slate-400">{slot.id}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.department}</td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.assignmentDutyType || "—"}</td><td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-600">{slot.assignmentDate ? slot.assignmentDate.split("-").reverse().join(".") : "—"}</td><td className="px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.assignmentNumber || "—"}</td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.extraStatus || "—"}</td><td className="max-w-[220px] px-4 py-3.5 text-[11px] text-slate-600"><span className="block truncate" title={slot.assignmentNotes || undefined}>{slot.assignmentNotes || "—"}</span></td><td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td></tr>)}{slots.every((slot) => getFilledCount(slot) === 0) && <tr><td colSpan={9} className="px-6 py-12 text-center text-xs text-slate-500">Henüz personel ataması bulunmuyor.</td></tr>}</tbody></table></div>
                 <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">{totals.filled} dolu kadro sayısı</div>
+              </article>
+            </section>
+          ) : activeSection === "blocked" ? (
+            <section aria-labelledby="blocked-slots-title" className="grid grid-cols-1 items-start gap-5">
+              <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                <div className="flex flex-col gap-3 border-b border-amber-100 bg-gradient-to-br from-amber-50/80 via-white to-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-white text-amber-700 shadow-sm"><ShieldCheck aria-hidden="true" className="size-5" /></div>
+                    <div><h3 id="blocked-slots-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Bloke kadrolar</h3><p className="mt-1 text-[11px] text-slate-500">Kullanıma kapalı kadroların güncel listesi.</p></div>
+                  </div>
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-amber-800"><span className="size-1.5 rounded-full bg-amber-500" />{slots.filter((slot) => slot.status === "Bloke").length} bloke kadro</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] border-collapse text-left">
+                    <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Derece</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead>
+                    <tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.status === "Bloke").map((slot) => <tr key={slot.id} className="transition-colors hover:bg-amber-50/30"><td className="whitespace-nowrap px-5 py-4 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{slot.id}</td><td className="px-4 py-4 text-[11px] font-semibold text-slate-800">{slot.title}</td><td className="px-4 py-4 text-[11px] text-slate-600">{slot.department}</td><td className="whitespace-nowrap px-4 py-4 text-[11px] text-slate-600">{slot.degree}</td><td className="px-4 py-4 font-mono text-[10px] text-slate-600">{slot.statusCode || "—"}</td><td className="px-4 py-4"><StatusBadge status={slot.status} /></td></tr>)}
+                      {slots.every((slot) => slot.status !== "Bloke") && <tr><td colSpan={6} className="px-6 py-12 text-center"><div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-50 text-amber-600"><ShieldCheck aria-hidden="true" className="size-5" /></div><p className="mt-3 text-xs font-medium text-slate-700">Bloke kadro bulunmuyor</p><p className="mt-1 text-[11px] text-slate-400">Bloke edilen kadrolar bu listede görüntülenir.</p></td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">Toplam {slots.filter((slot) => slot.status === "Bloke").length} kadro geçici olarak kullanıma kapalı.</div>
               </article>
             </section>
           ) : (

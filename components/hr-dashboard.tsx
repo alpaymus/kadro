@@ -366,7 +366,7 @@ export default function HrDashboard() {
 
           {activeSection === "positions" ? (
           <section className="grid grid-cols-1 items-start gap-5">
-            <article id="yeni-kadro" className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] xl:max-w-[560px]">
+            <article id="yeni-kadro" className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] xl:max-w-[760px]">
               <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
                 <div className="flex items-start gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Plus aria-hidden="true" className="size-[18px]" /></div>
@@ -374,18 +374,24 @@ export default function HrDashboard() {
                 </div>
               </div>
               <form id="new-cadre-form" onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
-                <FormField label="Birimi">
-                  <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
-                </FormField>
-                <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
-                <FormField label="Hizmet Sınıfı"><FieldControl><input required value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} placeholder="Örn. Genel İdare Hizmetleri" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
-                <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
-                <FormField label="Onay Tarihi"><FieldControl><input required type="date" value={form.approvalDate} onChange={(event) => setForm({ ...form, approvalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField label="Birimi">
+                    <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
+                  </FormField>
+                  <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField label="Hizmet Sınıfı"><FieldControl><input required value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} placeholder="Örn. Genel İdare Hizmetleri" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField label="Onay Tarihi"><FieldControl><input required type="date" value={form.approvalDate} onChange={(event) => setForm({ ...form, approvalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                  <FormField label="Durum Kodu"><FieldControl><input required maxLength={40} value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} placeholder="Örn. AKTİF-01" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Boş Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.vacantCount} onChange={(event) => setForm({ ...form, vacantCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                   <FormField label="Dolu Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.filledCount} onChange={(event) => setForm({ ...form, filledCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                 </div>
-                <FormField label="Durum Kodu"><FieldControl><input required maxLength={40} value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} placeholder="Örn. AKTİF-01" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
                 <div className="mt-1 border-t border-slate-100 pt-4">
                   {formMessage && <p role="status" className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-teal-700"><Check aria-hidden="true" className="size-3.5" />{formMessage}</p>}
                   <button type="submit" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Check aria-hidden="true" className="size-3.5" /> {editingSlotId ? "Değişiklikleri kaydet" : "Kadroyu oluştur"}</button>

@@ -220,7 +220,7 @@ function ParameterListManager({
         {values.length ? <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
           {values.map((value) => <li key={value} className="flex items-center justify-between gap-3 px-3 py-2"><span className="min-w-0 truncate text-[11px] font-medium text-slate-700">{value}</span><button type="button" onClick={() => onRemove(value)} aria-label={`${value} değerini sil`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-3.5" /></button></li>)}
         </ul> : <p className="rounded-lg border border-dashed border-slate-300 px-3 py-5 text-center text-[11px] text-slate-500">Tanımlı değer yok.</p>}
-        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Kaldırılan tanım mevcut kadro kayıtlarını değiştirmez.</p>
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Kaldırılan tanım mevcut kayıtları değiştirmez.</p>
       </div>
     </article>
   )
@@ -244,6 +244,7 @@ export default function HrDashboard() {
   const [positionTitles, setPositionTitles] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.title))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [serviceClasses, setServiceClasses] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.serviceClass).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [statusCodes, setStatusCodes] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.statusCode).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [extraStatusOptions, setExtraStatusOptions] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.extraStatus).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [departmentFilter, setDepartmentFilter] = useState("Tümü")
   const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])
   const [approvalFeedback, setApprovalFeedback] = useState("")
@@ -311,7 +312,7 @@ export default function HrDashboard() {
   "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
   approvals: { title: "Onaylar", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
-  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kadro birimlerini ve yeni kadro alanlarının seçeneklerini yönetin." },
+  "system-parameters": { title: "Sistem Parametreleri", subtitle: "Kadro birimleri ile kadro ve atama formu seçeneklerini yönetin." },
   }[activeSection]
 
   function handleRoleChange(role: HrRole) {
@@ -365,6 +366,12 @@ export default function HrDashboard() {
     if (!isAdmin) return
     setStatusCodes((current) => current.filter((item) => item !== value))
     if (!editingSlotId && form.statusCode === value) setForm((current) => ({ ...current, statusCode: "" }))
+  }
+
+  function handleRemoveExtraStatus(value: string) {
+    if (!isAdmin) return
+    setExtraStatusOptions((current) => current.filter((item) => item !== value))
+    if (extraStatus === value) setExtraStatus("")
   }
 
   function submitForApproval(payload: ApprovalPayload) {
@@ -682,13 +689,14 @@ export default function HrDashboard() {
                 <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
                   <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
                     <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p>
-                    <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Alanı Tanımları</h3>
-                    <p className="mt-1 text-[11px] text-slate-500">Kadro formundaki ünvan, hizmet sınıfı ve durum kodu seçeneklerini yönetin.</p>
+                    <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Form Alanı Tanımları</h3>
+                    <p className="mt-1 text-[11px] text-slate-500">Kadro formu ve personel atamadaki seçilebilir değerleri yönetin.</p>
                   </div>
                   <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
                     <ParameterListManager title="Kadro Ünvanı" description="Yeni kadro tanımlarken seçilebilecek ünvanlar." inputLabel="Yeni kadro ünvanı" placeholder="Örn. Kıdemli ürün uzmanı" values={positionTitles} onAdd={(value) => addCatalogValue(value, setPositionTitles)} onRemove={handleRemovePositionTitle} />
                     <ParameterListManager title="Hizmet Sınıfı" description="Kadro formunda kullanılacak hizmet sınıfları." inputLabel="Yeni hizmet sınıfı" placeholder="Örn. Teknik Hizmetler" values={serviceClasses} onAdd={(value) => addCatalogValue(value, setServiceClasses)} onRemove={handleRemoveServiceClass} />
                     <ParameterListManager title="Durum Kodu" description="Kadro formunda kullanılacak durum kodları." inputLabel="Yeni durum kodu" placeholder="Örn. AKTİF-03" values={statusCodes} onAdd={(value) => addCatalogValue(value.toLocaleUpperCase("tr-TR"), setStatusCodes)} onRemove={handleRemoveStatusCode} />
+                    <ParameterListManager title="Ekstra Durum" description="Personel atama formunda seçilebilecek ek durumlar." inputLabel="Yeni ekstra durum" placeholder="Örn. Geçici görevlendirme" values={extraStatusOptions} onAdd={(value) => addCatalogValue(value, setExtraStatusOptions)} onRemove={handleRemoveExtraStatus} />
                   </div>
                 </article>
               </section>
@@ -799,7 +807,7 @@ export default function HrDashboard() {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     <FormField label="Atama No"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><input required maxLength={40} value={assignmentNumber} onChange={(event) => setAssignmentNumber(event.target.value)} placeholder="Örn. ATA-2025-001" className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
-                    <FormField label="Ekstra Durum"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><input maxLength={100} value={extraStatus} onChange={(event) => setExtraStatus(event.target.value)} placeholder="Varsa ek durumu belirtin" className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                    <FormField label="Ekstra Durum"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><select aria-label="Ekstra Durum" value={extraStatus} onChange={(event) => setExtraStatus(event.target.value)} className="w-full appearance-none bg-transparent text-[13px] text-slate-700 outline-none"><option value="">Durum seçin (isteğe bağlı)</option>{extraStatusOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                     <FormField label="Açıklama"><textarea maxLength={500} value={assignmentNotes} onChange={(event) => setAssignmentNotes(event.target.value)} placeholder="Atamayla ilgili açıklama ekleyin" rows={2} className="w-full min-h-11 resize-y rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/10" /></FormField>
                   </div>
                   {assignmentMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{assignmentMessage}</p>}

@@ -11,13 +11,17 @@ import {
   ChevronDown,
   CircleHelp,
   FileBarChart,
+  Eye,
   LayoutDashboard,
+  Pencil,
   Plus,
   Search,
   Settings2,
   ShieldCheck,
   SlidersHorizontal,
+  Trash2,
   UsersRound,
+  X,
 } from "lucide-react"
 
 type SlotStatus = "Boş" | "Dolu" | "Bloke"
@@ -39,18 +43,18 @@ type Slot = {
 }
 
 const initialSlots: Slot[] = [
-  { id: "KDR-2025-001", title: "Kıdemli Ürün Tasarımcısı", department: "Ürün & Tasarım", degree: "5. Derece", budgetCode: "BR-2401", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
-  { id: "KDR-2025-002", title: "İK İş Ortağı", department: "İnsan & Kültür", degree: "6. Derece", budgetCode: "BR-1102", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-003", title: "Frontend Geliştirici", department: "Teknoloji", degree: "5. Derece", budgetCode: "BR-3204", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
-  { id: "KDR-2025-004", title: "Finans Uzmanı", department: "Finans", degree: "6. Derece", budgetCode: "BR-4101", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-005", title: "İş Analisti", department: "Ürün & Tasarım", degree: "7. Derece", budgetCode: "BR-2403", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-006", title: "Backend Geliştirici", department: "Teknoloji", degree: "5. Derece", budgetCode: "BR-3206", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
-  { id: "KDR-2025-007", title: "Pazarlama Uzmanı", department: "Pazarlama", degree: "6. Derece", budgetCode: "BR-5102", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-008", title: "Operasyon Yöneticisi", department: "Operasyon", degree: "4. Derece", budgetCode: "BR-6101", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
-  { id: "KDR-2025-009", title: "Veri Analisti", department: "Teknoloji", degree: "6. Derece", budgetCode: "BR-3208", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-010", title: "İşe Alım Uzmanı", department: "İnsan & Kültür", degree: "6. Derece", budgetCode: "BR-1104", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-011", title: "Satış Yöneticisi", department: "Satış", degree: "4. Derece", budgetCode: "BR-7102", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
-  { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", degree: "7. Derece", budgetCode: "BR-1106", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-001", title: "Kıdemli Ürün Tasarımcısı", department: "Ürün & Tasarım", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "AKTİF-01", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
+  { id: "KDR-2025-002", title: "İK İş Ortağı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-003", title: "Frontend Geliştirici", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-01-22", vacantCount: 0, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
+  { id: "KDR-2025-004", title: "Finans Uzmanı", department: "Finans", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-04-16", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-005", title: "İş Analisti", department: "Ürün & Tasarım", serviceClass: "Teknik Hizmetler", degree: "7. Derece", approvalDate: "2025-05-08", vacantCount: 0, filledCount: 0, statusCode: "BLOKE-01", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-006", title: "Backend Geliştirici", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-27", vacantCount: 1, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
+  { id: "KDR-2025-007", title: "Pazarlama Uzmanı", department: "Pazarlama", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-06-10", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-008", title: "Operasyon Yöneticisi", department: "Operasyon", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-01-14", vacantCount: 0, filledCount: 1, statusCode: "AKTİF-01", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
+  { id: "KDR-2025-009", title: "Veri Analisti", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "6. Derece", approvalDate: "2025-07-03", vacantCount: 2, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-010", title: "İşe Alım Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-21", vacantCount: 0, filledCount: 0, statusCode: "BLOKE-01", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-011", title: "Satış Yöneticisi", department: "Satış", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-02-05", vacantCount: 0, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
+  { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
 type DashboardSection = "positions" | "assignments" | "reports"
@@ -181,6 +185,8 @@ export default function HrDashboard() {
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("Tümü")
   const [formMessage, setFormMessage] = useState("")
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
   const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
   const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
@@ -247,14 +253,33 @@ export default function HrDashboard() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
+  function resetForm() {
+    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+    setEditingSlotId(null)
+  }
+
+  function startEditing(slot: Slot) {
+    setEditingSlotId(slot.id)
+    setForm({
+      unit: slot.department,
+      title: slot.title,
+      serviceClass: slot.serviceClass ?? "",
+      degree: slot.degree,
+      approvalDate: slot.approvalDate ?? "",
+      vacantCount: String(getVacantCount(slot)),
+      filledCount: String(getFilledCount(slot)),
+      statusCode: slot.statusCode ?? "",
+    })
+    setFormMessage(`${slot.id} düzenleme için forma yüklendi.`)
+    document.getElementById("new-cadre-form")?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const nextId = `KDR-2025-${String(slots.length + 1).padStart(3, "0")}`
     const vacantCount = Number(form.vacantCount)
     const filledCount = Number(form.filledCount)
     const status: SlotStatus = vacantCount > 0 ? "Boş" : filledCount > 0 ? "Dolu" : "Bloke"
-    setSlots((current) => [{
-      id: nextId,
+    const updatedFields = {
       title: form.title.trim(),
       department: form.unit,
       degree: form.degree,
@@ -264,11 +289,24 @@ export default function HrDashboard() {
       filledCount,
       statusCode: form.statusCode.trim().toLocaleUpperCase("tr-TR"),
       status,
+    }
+
+    if (editingSlotId) {
+      setSlots((current) => current.map((slot) => slot.id === editingSlotId ? { ...slot, ...updatedFields } : slot))
+      setFormMessage(`${editingSlotId} numaralı kadro güncellendi.`)
+      resetForm()
+      return
+    }
+
+    const nextId = `KDR-2025-${String(slots.length + 1).padStart(3, "0")}`
+    setSlots((current) => [{
+      id: nextId,
+      ...updatedFields,
       employee: null,
       initials: null,
       avatarTone: "",
     }, ...current])
-    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+    resetForm()
     setFormMessage(`${nextId} numaralı kadro başarıyla oluşturuldu.`)
   }
 
@@ -327,15 +365,15 @@ export default function HrDashboard() {
           </section>
 
           {activeSection === "positions" ? (
-          <section className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(320px,0.82fr)_minmax(0,1.55fr)]">
-            <article id="yeni-kadro" className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+          <section className="grid grid-cols-1 items-start gap-5">
+            <article id="yeni-kadro" className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] xl:max-w-[560px]">
               <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
                 <div className="flex items-start gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Plus aria-hidden="true" className="size-[18px]" /></div>
-                  <div><h3 className="text-[14px] font-semibold text-slate-900">Yeni kadro tanımlama</h3><p className="mt-1 text-[11px] text-slate-500">Organizasyonunuza yeni bir pozisyon ekleyin.</p></div>
+                  <div><h3 className="text-[14px] font-semibold text-slate-900">{editingSlotId ? "Kadroyu güncelle" : "Yeni kadro tanımlama"}</h3><p className="mt-1 text-[11px] text-slate-500">{editingSlotId ? `${editingSlotId} için bilgileri düzenleyin.` : "Organizasyonunuza yeni bir pozisyon ekleyin."}</p></div>
                 </div>
               </div>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
+              <form id="new-cadre-form" onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
                 <FormField label="Birimi">
                   <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                 </FormField>
@@ -350,7 +388,8 @@ export default function HrDashboard() {
                 <FormField label="Durum Kodu"><FieldControl><input required maxLength={40} value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} placeholder="Örn. AKTİF-01" className="w-full bg-transparent text-xs uppercase text-slate-700 outline-none placeholder:normal-case placeholder:text-slate-400" /></FieldControl></FormField>
                 <div className="mt-1 border-t border-slate-100 pt-4">
                   {formMessage && <p role="status" className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-teal-700"><Check aria-hidden="true" className="size-3.5" />{formMessage}</p>}
-                  <button type="submit" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Plus aria-hidden="true" className="size-3.5" /> Kadroyu oluştur</button>
+                  <button type="submit" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Check aria-hidden="true" className="size-3.5" /> {editingSlotId ? "Değişiklikleri kaydet" : "Kadroyu oluştur"}</button>
+                  {editingSlotId && <button type="button" onClick={() => { resetForm(); setFormMessage("Düzenleme iptal edildi.") }} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 text-xs font-medium text-slate-600 transition hover:bg-slate-50"><X aria-hidden="true" className="size-3.5" /> Düzenlemeden vazgeç</button>}
                   <p className="mt-3 text-center text-[10px] text-slate-400">Durum, boş ve dolu kadro sayılarına göre belirlenir.</p>
                 </div>
               </form>
@@ -365,8 +404,8 @@ export default function HrDashboard() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[1240px] border-collapse text-left">
-                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Hizmet Sınıfı</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Derecesi</th><th scope="col" className="px-4 py-3 font-semibold">Onay Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Boş Kadro Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">Dolu Kadro Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th><th scope="col" className="px-4 py-3 font-semibold">Atanmış personel</th></tr></thead>
+                <table className="w-full min-w-[1260px] border-collapse text-left">
+                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-3 py-3 font-semibold">Birimi</th><th scope="col" className="px-3 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-3 py-3 font-semibold">Hizmet Sınıfı</th><th scope="col" className="px-3 py-3 font-semibold">Kadro Derecesi</th><th scope="col" className="px-3 py-3 font-semibold">Onay Tarihi</th><th scope="col" className="px-3 py-3 font-semibold">Boş Kadro Sayısı</th><th scope="col" className="px-3 py-3 font-semibold">Dolu Kadro Sayısı</th><th scope="col" className="px-3 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-3 py-3 text-right font-semibold">İşlemler</th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredSlots.map((slot) => <tr key={slot.id} className="transition-colors hover:bg-slate-50/70">
                       <td className="whitespace-nowrap px-5 py-3.5 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{slot.id}</td>
@@ -377,11 +416,10 @@ export default function HrDashboard() {
                       <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-700">{slot.approvalDate ? slot.approvalDate.split("-").reverse().join(".") : "—"}</td>
                       <td className="px-4 py-3.5 text-[11px] font-semibold text-teal-700">{getVacantCount(slot)}</td>
                       <td className="px-4 py-3.5 text-[11px] font-semibold text-slate-700">{getFilledCount(slot)}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.statusCode ?? "—"}</td>
-                      <td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td>
-                      <td className="px-4 py-3.5">{slot.employee ? <div className="flex items-center gap-2"><span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div> : <span className="text-[11px] text-slate-400">—</span>}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.statusCode || "—"}</td>
+                      <td className="px-3 py-3.5"><div className="flex items-center justify-end gap-1.5"><button type="button" onClick={() => setSelectedSlot(slot)} aria-label={`${slot.title} kadrosunu görüntüle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><Eye aria-hidden="true" className="size-3.5" />Görüntüle</button><button type="button" onClick={() => startEditing(slot)} aria-label={`${slot.title} kadrosunu güncelle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><Pencil aria-hidden="true" className="size-3.5" />Güncelle</button><button type="button" onClick={() => { if (window.confirm(`${slot.title} kadrosunu silmek istediğinizden emin misiniz?`)) { setSlots((current) => current.filter((item) => item.id !== slot.id)); if (editingSlotId === slot.id) resetForm() } }} aria-label={`${slot.title} kadrosunu sil`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-rose-200 px-2 text-[10px] font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-3.5" />Sil</button></div></td>
                     </tr>)}
-                    {filteredSlots.length === 0 && <tr><td colSpan={11} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
+                    {filteredSlots.length === 0 && <tr><td colSpan={10} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -390,6 +428,18 @@ export default function HrDashboard() {
                 <span className="text-[10px] text-slate-400">Son güncelleme: bugün, 09:42</span>
               </div>
             </article>
+            {selectedSlot && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSlot(null) }}>
+              <section role="dialog" aria-modal="true" aria-labelledby="slot-details-title" className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+                <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div><p className="font-mono text-[10px] font-semibold tracking-wide text-teal-700">{selectedSlot.id}</p><h3 id="slot-details-title" className="mt-1 text-lg font-semibold text-slate-900">{selectedSlot.title}</h3><p className="mt-1 text-xs text-slate-500">Kadro bilgileri ve güncel atama durumu</p></div>
+                  <button type="button" onClick={() => setSelectedSlot(null)} aria-label="Ayrıntı penceresini kapat" className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><X aria-hidden="true" className="size-4" /></button>
+                </div>
+                <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {[["Birimi", selectedSlot.department], ["Hizmet sınıfı", selectedSlot.serviceClass || "—"], ["Kadro derecesi", selectedSlot.degree], ["Onay tarihi", selectedSlot.approvalDate ? selectedSlot.approvalDate.split("-").reverse().join(".") : "—"], ["Boş kadro sayısı", String(getVacantCount(selectedSlot))], ["Dolu kadro sayısı", String(getFilledCount(selectedSlot))], ["Durum kodu", selectedSlot.statusCode || "—"], ["Atanmış personel", selectedSlot.employee || "Atama bekliyor"]].map(([label, value]) => <div key={label} className="rounded-lg bg-slate-50 px-3.5 py-3"><dt className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{label}</dt><dd className="mt-1 text-sm font-medium text-slate-800">{value}</dd></div>)}
+                </dl>
+                <div className="mt-5 flex items-center justify-between"><StatusBadge status={selectedSlot.status} /><button type="button" onClick={() => setSelectedSlot(null)} className="rounded-lg bg-teal-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">Kapat</button></div>
+              </section>
+            </div>}
           </section>
           ) : activeSection === "assignments" ? (
             <section className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.5fr)]">

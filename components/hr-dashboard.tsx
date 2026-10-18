@@ -26,7 +26,8 @@ type Slot = {
   title: string
   department: string
   degree: string
-  serviceClassApprovalDate?: string
+  serviceClass?: string
+  approvalDate?: string
   vacantCount?: number
   filledCount?: number
   statusCode?: string
@@ -180,7 +181,7 @@ export default function HrDashboard() {
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("Tümü")
   const [formMessage, setFormMessage] = useState("")
-  const [form, setForm] = useState({ unit: "", title: "", degree: "", serviceClassApprovalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+  const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
   const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
@@ -200,7 +201,7 @@ export default function HrDashboard() {
   }, [slots])
 
   const filteredSlots = useMemo(() => slots.filter((slot) => {
-    const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.degree} ${slot.statusCode ?? ""} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
+    const matchesQuery = `${slot.id} ${slot.title} ${slot.department} ${slot.serviceClass ?? ""} ${slot.degree} ${slot.statusCode ?? ""} ${slot.employee ?? ""}`.toLocaleLowerCase("tr-TR").includes(query.toLocaleLowerCase("tr-TR"))
     const matchesStatus = statusFilter === "Tümü" || slot.status === statusFilter
     return matchesQuery && matchesStatus
   }), [query, slots, statusFilter])
@@ -235,8 +236,8 @@ export default function HrDashboard() {
   }
 
   function handleExport() {
-    const columns = ["Kadro ID", "Birimi", "Kadro Ünvanı", "Kadro Derecesi", "Hizmet Sınıfı Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"]
-    const rows = slots.map((slot) => [slot.id, slot.department, slot.title, slot.degree, slot.serviceClassApprovalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])
+    const columns = ["Kadro ID", "Birimi", "Kadro Ünvanı", "Hizmet Sınıfı", "Kadro Derecesi", "Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"]
+    const rows = slots.map((slot) => [slot.id, slot.department, slot.title, slot.serviceClass ?? "", slot.degree, slot.approvalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])
     const csv = "\uFEFF" + [columns, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const link = document.createElement("a")
@@ -257,7 +258,8 @@ export default function HrDashboard() {
       title: form.title.trim(),
       department: form.unit,
       degree: form.degree,
-      serviceClassApprovalDate: form.serviceClassApprovalDate,
+      serviceClass: form.serviceClass.trim(),
+      approvalDate: form.approvalDate,
       vacantCount,
       filledCount,
       statusCode: form.statusCode.trim().toLocaleUpperCase("tr-TR"),
@@ -266,7 +268,7 @@ export default function HrDashboard() {
       initials: null,
       avatarTone: "",
     }, ...current])
-    setForm({ unit: "", title: "", degree: "", serviceClassApprovalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
+    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "AKTİF" })
     setFormMessage(`${nextId} numaralı kadro başarıyla oluşturuldu.`)
   }
 
@@ -338,10 +340,9 @@ export default function HrDashboard() {
                   <FieldControl><Building2 aria-hidden="true" className="mr-2 size-3.5 shrink-0 text-slate-400" /><select required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Birim seçin</option>{["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                 </FormField>
                 <FormField label="Kadro Ünvanı"><FieldControl><input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Örn. Kıdemli ürün uzmanı" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
-                  <FormField label="Hizmet Sınıfı Onay Tarihi"><FieldControl><input required type="date" value={form.serviceClassApprovalDate} onChange={(event) => setForm({ ...form, serviceClassApprovalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
-                </div>
+                <FormField label="Hizmet Sınıfı"><FieldControl><input required value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} placeholder="Örn. Genel İdare Hizmetleri" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                <FormField label="Onay Tarihi"><FieldControl><input required type="date" value={form.approvalDate} onChange={(event) => setForm({ ...form, approvalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Boş Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.vacantCount} onChange={(event) => setForm({ ...form, vacantCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                   <FormField label="Dolu Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.filledCount} onChange={(event) => setForm({ ...form, filledCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
@@ -364,18 +365,23 @@ export default function HrDashboard() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[940px] border-collapse text-left">
-                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th><th scope="col" className="px-4 py-3 font-semibold">Boş / Dolu</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Atanmış personel</th></tr></thead>
+                <table className="w-full min-w-[1240px] border-collapse text-left">
+                  <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Kadro ID</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Hizmet Sınıfı</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Derecesi</th><th scope="col" className="px-4 py-3 font-semibold">Onay Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Boş Kadro Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">Dolu Kadro Sayısı</th><th scope="col" className="px-4 py-3 font-semibold">Durum Kodu</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th><th scope="col" className="px-4 py-3 font-semibold">Atanmış personel</th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredSlots.map((slot) => <tr key={slot.id} className="transition-colors hover:bg-slate-50/70">
                       <td className="whitespace-nowrap px-5 py-3.5 font-mono text-[10px] font-medium text-slate-500 sm:px-6">{slot.id}</td>
-                      <td className="px-4 py-3.5"><p className="whitespace-nowrap text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 text-[10px] text-slate-400">{slot.department} <span className="px-0.5 text-slate-300">·</span> {slot.degree}</p><p className="mt-1 text-[10px] text-slate-400">Onay: {slot.serviceClassApprovalDate ? slot.serviceClassApprovalDate.split("-").reverse().join(".") : "—"}</p></td>
-                      <td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-600"><span className="font-semibold text-teal-700">{getVacantCount(slot)}</span> boş <span className="px-0.5 text-slate-300">·</span> <span className="font-semibold text-slate-700">{getFilledCount(slot)}</span> dolu</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-700">{slot.department}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] font-semibold text-slate-800">{slot.title}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-700">{slot.serviceClass ?? "—"}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-700">{slot.degree}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-700">{slot.approvalDate ? slot.approvalDate.split("-").reverse().join(".") : "—"}</td>
+                      <td className="px-4 py-3.5 text-[11px] font-semibold text-teal-700">{getVacantCount(slot)}</td>
+                      <td className="px-4 py-3.5 text-[11px] font-semibold text-slate-700">{getFilledCount(slot)}</td>
                       <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.statusCode ?? "—"}</td>
+                      <td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td>
                       <td className="px-4 py-3.5">{slot.employee ? <div className="flex items-center gap-2"><span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div> : <span className="text-[11px] text-slate-400">—</span>}</td>
                     </tr>)}
-                    {filteredSlots.length === 0 && <tr><td colSpan={6} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
+                    {filteredSlots.length === 0 && <tr><td colSpan={11} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
                   </tbody>
                 </table>
               </div>

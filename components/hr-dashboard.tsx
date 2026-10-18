@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState, type FormEvent } from "react"
+import HrApprovals from "@/components/hr-approvals"
+import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type Slot, type SlotStatus } from "@/components/hr-types"
 import {
   ArrowDownToLine,
   ArrowUpRight,
@@ -9,6 +11,7 @@ import {
   Building2,
   Check,
   ChevronDown,
+  ClipboardCheck,
   CircleHelp,
   FileBarChart,
   Eye,
@@ -23,41 +26,6 @@ import {
   UsersRound,
   X,
 } from "lucide-react"
-
-type SlotStatus = "Boş" | "Dolu" | "Bloke"
-type Slot = {
-  id: string
-  title: string
-  department: string
-  degree: string
-  serviceClass?: string
-  approvalDate?: string
-  vacantCount?: number
-  filledCount?: number
-  statusCode?: string
-  budgetCode?: string
-  status: SlotStatus
-  employee: string | null
-  assignmentDutyType?: string
-  assignmentDate?: string
-  assignmentNumber?: string
-  extraStatus?: string
-  assignmentNotes?: string
-  initials: string | null
-  avatarTone: string
-}
-
-type BlockedRecord = {
-  id: string
-  slotId: string
-  title: string
-  department: string
-  degree: string
-  count: number
-  processDate: string
-  reason: string
-  description: string
-}
 
 function getTodayDate() {
   const today = new Date()
@@ -80,13 +48,15 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "reports"
+type DashboardSection = "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports"
+type NavigationItem = { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }
 
-const navigation: { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }[] = [
+const navigation: NavigationItem[] = [
   { id: "positions", label: "Kadro Yönetimi", icon: BriefcaseBusiness },
   { id: "assignments", label: "Personel Atama", icon: UsersRound },
   { id: "blocked", label: "Bloke Kadro", icon: ShieldCheck },
   { id: "degree-change", label: "Kadro Derece Değişikliği", icon: Settings2 },
+  { id: "approvals", label: "Onaylar", icon: ClipboardCheck },
   { id: "reports", label: "Raporlar", icon: FileBarChart },
 ]
 
@@ -104,7 +74,7 @@ function BrandMark() {
   )
 }
 
-function Sidebar({ activeSection, onNavigate }: { activeSection: DashboardSection; onNavigate: (section: DashboardSection) => void }) {
+function Sidebar({ activeSection, onNavigate, navigationItems, currentUser, pendingCount }: { activeSection: DashboardSection; onNavigate: (section: DashboardSection) => void; navigationItems: NavigationItem[]; currentUser: (typeof mockHrUsers)[number]; pendingCount: number }) {
   return (
     <aside className="hidden min-h-screen w-[252px] shrink-0 flex-col border-r border-slate-800 bg-slate-950 text-slate-300 md:flex">
       <BrandMark />
@@ -112,7 +82,7 @@ function Sidebar({ activeSection, onNavigate }: { activeSection: DashboardSectio
       <div className="px-5 pt-7">
         <p className="mb-3 px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500">ÇALIŞMA ALANI</p>
         <nav aria-label="Ana menü" className="flex flex-col gap-1">
-          {navigation.map(({ id, label, icon: Icon }) => {
+          {navigationItems.map(({ id, label, icon: Icon }) => {
             const current = activeSection === id
             return (
               <button
@@ -124,7 +94,8 @@ function Sidebar({ activeSection, onNavigate }: { activeSection: DashboardSectio
               >
                 <Icon aria-hidden="true" className={`size-[17px] ${current ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`} strokeWidth={1.8} />
                 {label}
-                {current && <span className="ml-auto size-1.5 rounded-full bg-teal-400" />}
+                {id === "approvals" && pendingCount > 0 && <span className="ml-auto rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-semibold text-amber-300">{pendingCount}</span>}
+                {current && <span className={`${id === "approvals" && pendingCount > 0 ? "" : "ml-auto"} size-1.5 rounded-full bg-teal-400`} />}
               </button>
             )
           })}
@@ -140,10 +111,10 @@ function Sidebar({ activeSection, onNavigate }: { activeSection: DashboardSectio
           <a href="#destek" className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-300 hover:text-teal-200">Destek merkezi <ArrowUpRight aria-hidden="true" className="size-3" /></a>
         </div>
         <div className="mt-4 flex items-center gap-3 border-t border-slate-800 pt-4">
-          <div className="flex size-9 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-slate-200">ZA</div>
+          <div className="flex size-9 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-slate-200">{currentUser.initials}</div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-slate-100">Zeynep Arslan</p>
-            <p className="mt-0.5 text-[10px] text-slate-500">İK Yöneticisi</p>
+            <p className="truncate text-xs font-semibold text-slate-100">{currentUser.name}</p>
+            <p className="mt-0.5 text-[10px] text-slate-500">{currentUser.roleLabel}</p>
           </div>
           <Settings2 aria-hidden="true" className="size-4 text-slate-500" />
         </div>
@@ -206,8 +177,15 @@ function getFilledCount(slot: Slot) {
 }
 
 export default function HrDashboard() {
-  const [slots, setSlots] = useState(initialSlots)
+  const [slots, setSlots] = useState<Slot[]>(initialSlots)
   const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
+  const [currentUserId, setCurrentUserId] = useState<string>(mockHrUsers[0].id)
+  const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])
+  const [approvalFeedback, setApprovalFeedback] = useState("")
+  const currentUser = mockHrUsers.find((user) => user.id === currentUserId) ?? mockHrUsers[0]
+  const isHrSpecialist = currentUser.role === "hr-specialist"
+  const pendingApprovalCount = approvalRequests.filter((request) => request.status === "pending").length
+  const navigationItems = navigation.filter((item) => item.id !== "approvals" || currentUser.role === "hr-manager")
   const [blockForm, setBlockForm] = useState({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   const [blockMessage, setBlockMessage] = useState("")
   const [degreeChangeSlotId, setDegreeChangeSlotId] = useState("")
@@ -259,8 +237,89 @@ export default function HrDashboard() {
   assignments: { title: "Personel atama", subtitle: "Boş kadroları çalışanlarla eşleştirin ve atamaları yönetin." },
   blocked: { title: "Bloke Kadro", subtitle: "Geçici olarak kullanıma kapalı kadroları ve durum bilgilerini inceleyin." },
   "degree-change": { title: "Kadro Derece Değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
+  approvals: { title: "Onaylar", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
   reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
   }[activeSection]
+
+  function submitForApproval(payload: ApprovalPayload) {
+    if (!isHrSpecialist) {
+      setFormMessage("Bu işlem yalnızca İK Uzmanı rolüyle onaya gönderilebilir.")
+      return false
+    }
+
+    const request: HrApprovalRequest = {
+      id: `ONAY-${Date.now()}-${Math.random().toString(36).slice(2, 6).toLocaleUpperCase("tr-TR")}`,
+      payload,
+      submittedById: currentUser.id,
+      submittedByName: currentUser.name,
+      submittedAt: new Date().toISOString(),
+      status: "pending",
+    }
+    setApprovalRequests((current) => [request, ...current])
+    setApprovalFeedback("")
+    return true
+  }
+
+  function handleApprovalDecision(requestId: string, decision: "approved" | "rejected") {
+    if (currentUser.role !== "hr-manager") return
+    const request = approvalRequests.find((item) => item.id === requestId && item.status === "pending")
+    if (!request || request.submittedById === currentUser.id) return
+
+    if (decision === "approved") {
+      const { payload } = request
+      if (payload.kind === "slot-create") {
+        if (slots.some((slot) => slot.id === payload.slot.id)) {
+          setApprovalFeedback("Bu kadro numarası artık kullanılıyor. Talebi reddedebilir veya güncelleyebilirsiniz.")
+          return
+        }
+        setSlots((current) => [payload.slot, ...current])
+      } else if (payload.kind === "slot-update") {
+        if (!slots.some((slot) => slot.id === payload.slotId)) {
+          setApprovalFeedback("Güncellenecek kadro bulunamadı. Talep uygulanmadı.")
+          return
+        }
+        setSlots((current) => current.map((slot) => slot.id === payload.slotId ? { ...slot, ...payload.updates } : slot))
+      } else if (payload.kind === "slot-delete") {
+        if (!slots.some((slot) => slot.id === payload.slotId)) {
+          setApprovalFeedback("Silinecek kadro bulunamadı. Talep uygulanmadı.")
+          return
+        }
+        setSlots((current) => current.filter((slot) => slot.id !== payload.slotId))
+        setBlockedRecords((current) => current.filter((record) => record.slotId !== payload.slotId))
+      } else if (payload.kind === "assignment") {
+        const slot = slots.find((item) => item.id === payload.slotId)
+        if (!slot || getVacantCount(slot) < 1) {
+          setApprovalFeedback("Atama için boş kadro kalmadı. Talep uygulanmadı.")
+          return
+        }
+        setSlots((current) => current.map((item) => {
+          if (item.id !== payload.slotId) return item
+          const nextVacantCount = getVacantCount(item) - 1
+          const name = payload.employee
+          return { ...item, status: nextVacantCount > 0 ? "Boş" : "Dolu", vacantCount: nextVacantCount, filledCount: getFilledCount(item) + 1, employee: name, assignmentDutyType: payload.dutyType, assignmentDate: payload.assignmentDate, assignmentNumber: payload.assignmentNumber, extraStatus: payload.extraStatus, assignmentNotes: payload.notes, initials: name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"), avatarTone: "bg-teal-100 text-teal-700" }
+        }))
+      } else if (payload.kind === "block") {
+        const slot = slots.find((item) => item.id === payload.slotId)
+        if (!slot || getVacantCount(slot) < payload.record.count) {
+          setApprovalFeedback("Bloke edilecek boş kadro miktarı artık yeterli değil. Talep uygulanmadı.")
+          return
+        }
+        const remainingVacant = getVacantCount(slot) - payload.record.count
+        setSlots((current) => current.map((item) => item.id !== payload.slotId ? item : { ...item, vacantCount: remainingVacant, status: remainingVacant > 0 ? "Boş" : getFilledCount(item) > 0 ? "Dolu" : "Bloke" }))
+        setBlockedRecords((current) => [payload.record, ...current])
+      } else if (payload.kind === "degree-change") {
+        const slot = slots.find((item) => item.id === payload.slotId)
+        if (!slot || slot.degree !== payload.previousDegree) {
+          setApprovalFeedback("Kadro derecesi talep oluşturulduktan sonra değişmiş. Talep uygulanmadı.")
+          return
+        }
+        setSlots((current) => current.map((item) => item.id === payload.slotId ? { ...item, degree: payload.newDegree } : item))
+      }
+    }
+
+    setApprovalRequests((current) => current.map((item) => item.id === request.id ? { ...item, status: decision, decidedByName: currentUser.name, decidedAt: new Date().toISOString() } : item))
+    setApprovalFeedback(decision === "approved" ? "Talep onaylandı ve ilgili kadro kayıtları güncellendi." : "Talep reddedildi.")
+  }
 
   function handleBlockSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -274,13 +333,7 @@ export default function HrDashboard() {
       return
     }
 
-    const remainingVacant = availableCount - count
-    setSlots((current) => current.map((item) => item.id !== slot.id ? item : {
-      ...item,
-      vacantCount: remainingVacant,
-      status: remainingVacant > 0 ? "Boş" : getFilledCount(item) > 0 ? "Dolu" : "Bloke",
-    }))
-    setBlockedRecords((current) => [...current, {
+    const record: BlockedRecord = {
       id: `${slot.id}-BLK-${Date.now()}`,
       slotId: slot.id,
       title: slot.title,
@@ -290,8 +343,9 @@ export default function HrDashboard() {
       processDate: blockForm.processDate,
       reason,
       description: blockForm.description.trim(),
-    }])
-    setBlockMessage(`${slot.title} kadrosundan ${count} adet bloke edildi.`)
+    }
+    if (!submitForApproval({ kind: "block", slotId: slot.id, record })) return
+    setBlockMessage(`${slot.title} için ${count} adet bloke talebi onaya gönderildi.`)
     setBlockForm({ slotId: "", blockCount: "1", processDate: getTodayDate(), reason: "", description: "" })
   }
 
@@ -303,8 +357,8 @@ export default function HrDashboard() {
       return
     }
 
-    setSlots((current) => current.map((item) => item.id === slot.id ? { ...item, degree: newDegree } : item))
-    setDegreeChangeMessage(`${slot.title} kadrosunun derecesi ${newDegree} olarak güncellendi.`)
+    if (!submitForApproval({ kind: "degree-change", slotId: slot.id, previousDegree: slot.degree, newDegree })) return
+    setDegreeChangeMessage(`${slot.title} kadrosu için ${newDegree} derece talebi onaya gönderildi.`)
     setDegreeChangeSlotId("")
     setNewDegree("")
   }
@@ -314,26 +368,8 @@ export default function HrDashboard() {
     const name = employeeName.trim()
     const number = assignmentNumber.trim()
     if (!assignmentSlotId || !name || !assignmentDate || !number) return
-    setSlots((current) => current.map((slot) => {
-      if (slot.id !== assignmentSlotId) return slot
-      const nextVacantCount = Math.max(0, getVacantCount(slot) - 1)
-      const nextFilledCount = getFilledCount(slot) + 1
-      return {
-        ...slot,
-        status: nextVacantCount > 0 ? "Boş" : "Dolu",
-        vacantCount: nextVacantCount,
-        filledCount: nextFilledCount,
-        employee: name,
-        assignmentDutyType,
-        assignmentDate,
-        assignmentNumber: number,
-        extraStatus: extraStatus.trim(),
-        assignmentNotes: assignmentNotes.trim(),
-        initials: name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"),
-        avatarTone: "bg-teal-100 text-teal-700",
-      }
-    }))
-    setAssignmentMessage(`${name}, seçilen kadroya başarıyla atandı.`)
+    if (!submitForApproval({ kind: "assignment", slotId: assignmentSlotId, employee: name, dutyType: assignmentDutyType, assignmentDate, assignmentNumber: number, extraStatus: extraStatus.trim(), notes: assignmentNotes.trim() })) return
+    setAssignmentMessage(`${name} için personel atama talebi onaya gönderildi.`)
     setEmployeeName("")
     setAssignmentDutyType("Kadro")
     setAssignmentDate("")
@@ -394,27 +430,22 @@ export default function HrDashboard() {
     }
 
     if (editingSlotId) {
-      setSlots((current) => current.map((slot) => slot.id === editingSlotId ? { ...slot, ...updatedFields } : slot))
-      setFormMessage(`${editingSlotId} numaralı kadro güncellendi.`)
+      if (!submitForApproval({ kind: "slot-update", slotId: editingSlotId, updates: updatedFields })) return
+      setFormMessage(`${editingSlotId} numaralı kadro değişikliği onaya gönderildi.`)
       resetForm()
       return
     }
 
     const nextId = `KDR-2025-${String(slots.length + 1).padStart(3, "0")}`
-    setSlots((current) => [{
-      id: nextId,
-      ...updatedFields,
-      employee: null,
-      initials: null,
-      avatarTone: "",
-    }, ...current])
+    const newSlot: Slot = { id: nextId, ...updatedFields, employee: null, initials: null, avatarTone: "" }
+    if (!submitForApproval({ kind: "slot-create", slot: newSlot })) return
     resetForm()
-    setFormMessage(`${nextId} numaralı kadro başarıyla oluşturuldu.`)
+    setFormMessage(`${nextId} numaralı kadro oluşturma talebi onaya gönderildi.`)
   }
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] text-slate-900 md:flex">
-      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} />
+      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} navigationItems={navigationItems} currentUser={currentUser} pendingCount={pendingApprovalCount} />
       <main id="kadro-yonetimi" className="min-w-0 flex-1">
         <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-3.5 sm:px-8 lg:px-10">
@@ -431,15 +462,20 @@ export default function HrDashboard() {
                 <span className="absolute right-2 top-2 size-1.5 rounded-full bg-teal-500 ring-2 ring-white" />
               </button>
               <div className="hidden h-8 w-px bg-slate-200 sm:block" />
-              <button type="button" className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5 text-left hover:bg-slate-50">
-                <span className="flex size-8 items-center justify-center rounded-full bg-teal-100 text-[11px] font-bold text-teal-800">ZA</span>
-                <span className="hidden text-xs font-medium text-slate-700 sm:block">Zeynep Arslan</span>
-                <ChevronDown aria-hidden="true" className="hidden size-3.5 text-slate-400 sm:block" />
-              </button>
+              <div className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[11px] font-bold text-teal-800">{currentUser.initials}</span>
+                <label className="flex flex-col">
+                  <span className="sr-only">Demo kullanıcı rolü seçin</span>
+                  <select aria-label="Demo kullanıcı rolü seçin" value={currentUser.id} onChange={(event) => { const selectedUser = mockHrUsers.find((user) => user.id === event.target.value); if (!selectedUser) return; setCurrentUserId(selectedUser.id); setApprovalFeedback(""); if (selectedUser.role !== "hr-manager" && activeSection === "approvals") setActiveSection("positions") }} className="max-w-[150px] cursor-pointer bg-transparent text-xs font-medium text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:max-w-none">
+                    {mockHrUsers.map((user) => <option key={user.id} value={user.id}>{user.name} · {user.roleLabel}</option>)}
+                  </select>
+                  <span className="hidden text-[10px] text-slate-400 sm:block">Demo kullanıcı</span>
+                </label>
+              </div>
             </div>
           </div>
           <nav aria-label="Mobil menü" className="flex gap-1 overflow-x-auto border-t border-slate-100 px-5 py-2 md:hidden">
-            {navigation.map(({ id, label, icon: Icon }) => {
+            {navigationItems.map(({ id, label, icon: Icon }) => {
               const current = activeSection === id
               return <button key={id} type="button" onClick={() => setActiveSection(id)} className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${current ? "bg-teal-50 text-teal-800" : "text-slate-500 hover:bg-slate-50"}`} aria-current={current ? "page" : undefined}><Icon aria-hidden="true" className="size-3.5" />{label}</button>
             })}
@@ -496,7 +532,7 @@ export default function HrDashboard() {
                 </div>
                 <div className="mt-1 border-t border-slate-100 pt-4">
                   {formMessage && <p role="status" className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-teal-700"><Check aria-hidden="true" className="size-3.5" />{formMessage}</p>}
-                  <button type="submit" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Check aria-hidden="true" className="size-3.5" /> {editingSlotId ? "Değişiklikleri kaydet" : "Kadroyu oluştur"}</button>
+                  <button type="submit" disabled={!isHrSpecialist} className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"><Check aria-hidden="true" className="size-3.5" /> {editingSlotId ? "Değişiklikleri kaydet" : "Kadroyu oluştur"}</button>
                   {editingSlotId && <button type="button" onClick={() => { resetForm(); setFormMessage("Düzenleme iptal edildi.") }} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 text-xs font-medium text-slate-600 transition hover:bg-slate-50"><X aria-hidden="true" className="size-3.5" /> Düzenlemeden vazgeç</button>}
                   <p className="mt-3 text-center text-[10px] text-slate-400">Durum, boş ve dolu kadro sayılarına göre belirlenir.</p>
                 </div>
@@ -525,7 +561,7 @@ export default function HrDashboard() {
                       <td className="px-4 py-3.5 text-[11px] font-semibold text-teal-700">{getVacantCount(slot)}</td>
                       <td className="px-4 py-3.5 text-[11px] font-semibold text-slate-700">{getFilledCount(slot)}</td>
                       <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.statusCode || "—"}</td>
-                      <td className="px-3 py-3.5"><div className="flex items-center justify-end gap-1.5"><button type="button" onClick={() => setSelectedSlot(slot)} aria-label={`${slot.title} kadrosunu görüntüle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><Eye aria-hidden="true" className="size-3.5" />Görüntüle</button><button type="button" onClick={() => startEditing(slot)} aria-label={`${slot.title} kadrosunu güncelle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><Pencil aria-hidden="true" className="size-3.5" />Güncelle</button><button type="button" onClick={() => { if (window.confirm(`${slot.title} kadrosunu silmek istediğinizden emin misiniz?`)) { setSlots((current) => current.filter((item) => item.id !== slot.id)); if (editingSlotId === slot.id) resetForm() } }} aria-label={`${slot.title} kadrosunu sil`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-rose-200 px-2 text-[10px] font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-3.5" />Sil</button></div></td>
+                      <td className="px-3 py-3.5"><div className="flex items-center justify-end gap-1.5"><button type="button" onClick={() => setSelectedSlot(slot)} aria-label={`${slot.title} kadrosunu görüntüle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><Eye aria-hidden="true" className="size-3.5" />Görüntüle</button><button type="button" onClick={() => startEditing(slot)} disabled={!isHrSpecialist} aria-label={`${slot.title} kadrosunu güncelle`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 px-2 text-[10px] font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><Pencil aria-hidden="true" className="size-3.5" />Güncelle</button><button type="button" onClick={() => { if (!isHrSpecialist) return; if (window.confirm(`${slot.title} kadrosunu silmek istediğinizden emin misiniz?`)) { submitForApproval({ kind: "slot-delete", slotId: slot.id, title: slot.title }); setFormMessage(`${slot.id} numaralı kadro silme talebi onaya gönderildi.`) } }} disabled={!isHrSpecialist} aria-label={`${slot.title} kadrosunu sil`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-rose-200 px-2 text-[10px] font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-3.5" />Sil</button></div></td>
                     </tr>)}
                     {filteredSlots.length === 0 && <tr><td colSpan={10} className="px-6 py-12 text-center"><div className="mx-auto flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search aria-hidden="true" className="size-4" /></div><p className="mt-3 text-xs font-medium text-slate-700">Sonuç bulunamadı</p><p className="mt-1 text-[11px] text-slate-400">Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p></td></tr>}
                   </tbody>
@@ -575,7 +611,7 @@ export default function HrDashboard() {
                     <FormField label="Açıklama"><textarea maxLength={500} value={assignmentNotes} onChange={(event) => setAssignmentNotes(event.target.value)} placeholder="Atamayla ilgili açıklama ekleyin" rows={2} className="w-full min-h-11 resize-y rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/10" /></FormField>
                   </div>
                   {assignmentMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{assignmentMessage}</p>}
-                  <button type="submit" disabled={!vacantSlots.length || !assignmentSlotId || !employeeName.trim() || !assignmentDate || !assignmentNumber.trim()} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-[13px] font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-45"><Check aria-hidden="true" className="size-4" />Personeli ata</button>
+                  <button type="submit" disabled={!isHrSpecialist || !vacantSlots.length || !assignmentSlotId || !employeeName.trim() || !assignmentDate || !assignmentNumber.trim()} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-[13px] font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-45"><Check aria-hidden="true" className="size-4" />Personeli ata</button>
                 </form>
               </article>
               <article className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
@@ -601,7 +637,7 @@ export default function HrDashboard() {
                     <FormField label="Açıklama"><textarea maxLength={500} rows={1} value={blockForm.description} onChange={(event) => setBlockForm((current) => ({ ...current, description: event.target.value }))} placeholder="İsteğe bağlı açıklama ekleyin" className="min-h-11 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/10" /></FormField>
                   </div>
                   {blockMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{blockMessage}</p>}
-                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Bloke edilen miktar seçilen kadronun boş sayısından düşülür.</p><button type="submit" disabled={!blockableSlots.length || !blockForm.slotId || !blockForm.reason.trim() || !Number.isInteger(Number(blockForm.blockCount)) || Number(blockForm.blockCount) < 1 || Number(blockForm.blockCount) > (selectedBlockSlot ? getVacantCount(selectedBlockSlot) : 0)} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-amber-900/10 transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><ShieldCheck aria-hidden="true" className="size-4" />Bloke kadro ekle</button></div>
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Bloke edilen miktar seçilen kadronun boş sayısından düşülür.</p><button type="submit" disabled={!isHrSpecialist || !blockableSlots.length || !blockForm.slotId || !blockForm.reason.trim() || !Number.isInteger(Number(blockForm.blockCount)) || Number(blockForm.blockCount) < 1 || Number(blockForm.blockCount) > (selectedBlockSlot ? getVacantCount(selectedBlockSlot) : 0)} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-amber-900/10 transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><ShieldCheck aria-hidden="true" className="size-4" />Bloke kadro ekle</button></div>
                 </form>
               </article>
               <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
@@ -627,10 +663,12 @@ export default function HrDashboard() {
                     <FormField label="Yeni Kadro Derecesi"><FieldControl className="h-11 rounded-xl border-slate-200 bg-slate-50/70 px-3.5 hover:border-slate-300 focus-within:bg-white"><select required disabled={!selectedDegreeChangeSlot} value={newDegree} onChange={(event) => setNewDegree(event.target.value)} className="w-full appearance-none bg-transparent text-[13px] text-slate-700 outline-none disabled:cursor-not-allowed disabled:text-slate-400"><option value="">Yeni derece seçin</option>{degreeOptions.filter((degree) => degree !== selectedDegreeChangeSlot?.degree).map((degree) => <option key={degree} value={degree}>{degree}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                   </div>
                   {degreeChangeMessage && <p role="status" className="rounded-xl border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800">{degreeChangeMessage}</p>}
-                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Personel bilgileri seçilen dolu kadrodan otomatik olarak getirilir.</p><button type="submit" disabled={!selectedDegreeChangeSlot || !newDegree || newDegree === selectedDegreeChangeSlot?.degree} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><Check aria-hidden="true" className="size-4" />Dereceyi güncelle</button></div>
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-slate-500">Personel bilgileri seçilen dolu kadrodan otomatik olarak getirilir.</p><button type="submit" disabled={!isHrSpecialist || !selectedDegreeChangeSlot || !newDegree || newDegree === selectedDegreeChangeSlot?.degree} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"><Check aria-hidden="true" className="size-4" />Dereceyi güncelle</button></div>
                 </form>
               </article>
             </section>
+          ) : activeSection === "approvals" ? (
+            currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
           ) : (
             <section className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
               <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">

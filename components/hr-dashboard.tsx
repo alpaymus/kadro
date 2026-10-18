@@ -38,6 +38,11 @@ type Slot = {
   budgetCode?: string
   status: SlotStatus
   employee: string | null
+  assignmentDutyType?: string
+  assignmentDate?: string
+  assignmentNumber?: string
+  extraStatus?: string
+  assignmentNotes?: string
   initials: string | null
   avatarTone: string
 }
@@ -191,6 +196,11 @@ export default function HrDashboard() {
   const [activeSection, setActiveSection] = useState<DashboardSection>("positions")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
+  const [assignmentDutyType, setAssignmentDutyType] = useState("Kadro")
+  const [assignmentDate, setAssignmentDate] = useState("")
+  const [assignmentNumber, setAssignmentNumber] = useState("")
+  const [extraStatus, setExtraStatus] = useState("")
+  const [assignmentNotes, setAssignmentNotes] = useState("")
   const [assignmentMessage, setAssignmentMessage] = useState("")
 
   const totals = useMemo(() => {
@@ -221,7 +231,8 @@ export default function HrDashboard() {
   function handleAssignment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const name = employeeName.trim()
-    if (!assignmentSlotId || !name) return
+    const number = assignmentNumber.trim()
+    if (!assignmentSlotId || !name || !assignmentDate || !number) return
     setSlots((current) => current.map((slot) => {
       if (slot.id !== assignmentSlotId) return slot
       const nextVacantCount = Math.max(0, getVacantCount(slot) - 1)
@@ -232,12 +243,22 @@ export default function HrDashboard() {
         vacantCount: nextVacantCount,
         filledCount: nextFilledCount,
         employee: name,
-        initials: name.split(/\\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"),
+        assignmentDutyType,
+        assignmentDate,
+        assignmentNumber: number,
+        extraStatus: extraStatus.trim(),
+        assignmentNotes: assignmentNotes.trim(),
+        initials: name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("tr-TR"),
         avatarTone: "bg-teal-100 text-teal-700",
       }
     }))
     setAssignmentMessage(`${name}, seçilen kadroya başarıyla atandı.`)
     setEmployeeName("")
+    setAssignmentDutyType("Kadro")
+    setAssignmentDate("")
+    setAssignmentNumber("")
+    setExtraStatus("")
+    setAssignmentNotes("")
     setAssignmentSlotId("")
   }
 
@@ -455,14 +476,21 @@ export default function HrDashboard() {
                   <FormField label="Boş kadro">
                     <FieldControl><select required value={assignmentSlotId} onChange={(event) => setAssignmentSlotId(event.target.value)} disabled={vacantSlots.length === 0} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none disabled:text-slate-400"><option value="" disabled>{vacantSlots.length ? "Kadro seçin" : "Atanabilir boş kadro yok"}</option>{vacantSlots.map((slot) => <option key={slot.id} value={slot.id}>{slot.id} · {slot.title}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl>
                   </FormField>
-                  <FormField label="Personel adı"><FieldControl><input required maxLength={100} value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} placeholder="Örn. Ayşe Demir" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Personel Adı ve Soyadı"><FieldControl><input required maxLength={100} value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} placeholder="Örn. Ayşe Demir" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Kadro/Fiili Görev"><FieldControl><select required value={assignmentDutyType} onChange={(event) => setAssignmentDutyType(event.target.value)} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="Kadro">Kadro</option><option value="Fiili Görev">Fiili Görev</option></select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
+                    <FormField label="Atama Tarihi"><FieldControl><input required type="date" value={assignmentDate} onChange={(event) => setAssignmentDate(event.target.value)} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                  </div>
+                  <FormField label="Atama No"><FieldControl><input required maxLength={40} value={assignmentNumber} onChange={(event) => setAssignmentNumber(event.target.value)} placeholder="Örn. ATA-2025-001" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Ekstra Durum"><FieldControl><input maxLength={100} value={extraStatus} onChange={(event) => setExtraStatus(event.target.value)} placeholder="Varsa ek durumu belirtin" className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400" /></FieldControl></FormField>
+                  <FormField label="Açıklama"><textarea maxLength={500} value={assignmentNotes} onChange={(event) => setAssignmentNotes(event.target.value)} placeholder="Atamayla ilgili açıklama ekleyin" rows={3} className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15" /></FormField>
                   {assignmentMessage && <p role="status" className="rounded-lg bg-teal-50 px-3 py-2 text-[11px] font-medium text-teal-800">{assignmentMessage}</p>}
-                  <button type="submit" disabled={!vacantSlots.length || !assignmentSlotId || !employeeName.trim()} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-45"><Check aria-hidden="true" className="size-3.5" />Personeli ata</button>
+                  <button type="submit" disabled={!vacantSlots.length || !assignmentSlotId || !employeeName.trim() || !assignmentDate || !assignmentNumber.trim()} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-xs font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-45"><Check aria-hidden="true" className="size-3.5" />Personeli ata</button>
                 </form>
               </article>
               <article className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
                 <div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 className="text-[14px] font-semibold text-slate-900">Mevcut personel atamaları</h3><p className="mt-1 text-[11px] text-slate-500">Dolu kadrolarda görev yapan çalışanlar.</p></div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[580px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Personel</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead><tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.employee !== null).map((slot) => <tr key={slot.id} className="hover:bg-slate-50/70"><td className="px-5 py-3.5 sm:px-6"><div className="flex items-center gap-2"><span className={`flex size-7 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone || "bg-teal-100 text-teal-700"}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div></td><td className="px-4 py-3.5"><p className="text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 font-mono text-[9px] text-slate-400">{slot.id}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.department}</td><td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td></tr>)}{slots.every((slot) => getFilledCount(slot) === 0) && <tr><td colSpan={4} className="px-6 py-12 text-center text-xs text-slate-500">Henüz personel ataması bulunmuyor.</td></tr>}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[1120px] border-collapse text-left"><thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400"><th scope="col" className="px-5 py-3 font-semibold sm:px-6">Personel Adı ve Soyadı</th><th scope="col" className="px-4 py-3 font-semibold">Kadro Ünvanı</th><th scope="col" className="px-4 py-3 font-semibold">Birimi</th><th scope="col" className="px-4 py-3 font-semibold">Kadro/Fiili Görev</th><th scope="col" className="px-4 py-3 font-semibold">Atama Tarihi</th><th scope="col" className="px-4 py-3 font-semibold">Atama No</th><th scope="col" className="px-4 py-3 font-semibold">Ekstra Durum</th><th scope="col" className="px-4 py-3 font-semibold">Açıklama</th><th scope="col" className="px-4 py-3 font-semibold">Durum</th></tr></thead><tbody className="divide-y divide-slate-100">{slots.filter((slot) => slot.employee !== null).map((slot) => <tr key={slot.id} className="hover:bg-slate-50/70"><td className="px-5 py-3.5 sm:px-6"><div className="flex items-center gap-2"><span className={`flex size-7 items-center justify-center rounded-full text-[9px] font-semibold ${slot.avatarTone || "bg-teal-100 text-teal-700"}`}>{slot.initials}</span><span className="whitespace-nowrap text-[11px] font-medium text-slate-700">{slot.employee}</span></div></td><td className="px-4 py-3.5"><p className="text-[11px] font-semibold text-slate-800">{slot.title}</p><p className="mt-1 font-mono text-[9px] text-slate-400">{slot.id}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.department}</td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.assignmentDutyType || "—"}</td><td className="whitespace-nowrap px-4 py-3.5 text-[11px] text-slate-600">{slot.assignmentDate ? slot.assignmentDate.split("-").reverse().join(".") : "—"}</td><td className="px-4 py-3.5 font-mono text-[10px] text-slate-600">{slot.assignmentNumber || "—"}</td><td className="px-4 py-3.5 text-[11px] text-slate-600">{slot.extraStatus || "—"}</td><td className="max-w-[220px] px-4 py-3.5 text-[11px] text-slate-600"><span className="block truncate" title={slot.assignmentNotes || undefined}>{slot.assignmentNotes || "—"}</span></td><td className="px-4 py-3.5"><StatusBadge status={slot.status} /></td></tr>)}{slots.every((slot) => getFilledCount(slot) === 0) && <tr><td colSpan={9} className="px-6 py-12 text-center text-xs text-slate-500">Henüz personel ataması bulunmuyor.</td></tr>}</tbody></table></div>
                 <div className="border-t border-slate-100 px-5 py-3.5 text-[10px] text-slate-500 sm:px-6">{totals.filled} dolu kadro sayısı</div>
               </article>
             </section>

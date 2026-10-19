@@ -238,7 +238,7 @@ function WorkspaceDashboard({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Toplam kadro" value={totals.total} helper="Organizasyon genelinde" icon={UsersRound} tone="slate" />
-        <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
+        <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen kadro" icon={BriefcaseBusiness} tone="teal" />
         {role === "hr-manager" ? (
           <StatCard label="Bekleyen onay" value={pendingCount} helper="Kararınızı bekleyen talepler" icon={ClipboardCheck} tone="amber" />
         ) : role === "admin" ? (
@@ -807,7 +807,7 @@ export default function HrDashboard() {
 
           {activeSection !== "system-parameters" && activeSection !== "workspace" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
-            <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen pozisyon" icon={BriefcaseBusiness} tone="teal" />
+            <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen kadro" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
             <StatCard label="Bloke kadro" value={totals.blocked} helper="Geçici olarak kullanıma kapalı" icon={ShieldCheck} tone="amber" />
           </section>}
@@ -866,7 +866,7 @@ export default function HrDashboard() {
               <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
                 <div className="flex items-start gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Plus aria-hidden="true" className="size-[18px]" /></div>
-                  <div><h3 className="text-[14px] font-semibold text-slate-900">{editingSlotId ? "Kadroyu güncelle" : "Yeni kadro tanımlama"}</h3><p className="mt-1 text-[11px] text-slate-500">{editingSlotId ? `${editingSlotId} için bilgileri düzenleyin.` : "Organizasyonunuza yeni bir pozisyon ekleyin."}</p></div>
+                  <div><h3 className="text-[14px] font-semibold text-slate-900">{editingSlotId ? "Kadroyu güncelle" : "Yeni kadro tanımlama"}</h3><p className="mt-1 text-[11px] text-slate-500">{editingSlotId ? `${editingSlotId} için bilgileri düzenleyin.` : "Organizasyonunuza yeni bir kadro ekleyin."}</p></div>
                 </div>
               </div>
               <form id="new-cadre-form" onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:px-6 sm:py-5">
@@ -895,7 +895,7 @@ export default function HrDashboard() {
 
             <article className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
               <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div><h3 className="text-[14px] font-semibold text-slate-900">Mevcut kadro slotları</h3><p className="mt-1 text-[11px] text-slate-500">Pozisyonların güncel durum ve atama bilgileri.</p></div>
+                <div><h3 className="text-[14px] font-semibold text-slate-900">Mevcut kadro slotları</h3><p className="mt-1 text-[11px] text-slate-500">Kadroların güncel durum ve atama bilgileri.</p></div>
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="flex h-8 min-w-[155px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 sm:flex-none"><Search aria-hidden="true" className="size-3.5 shrink-0 text-slate-400" /><span className="sr-only">Kadrolarda ara</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kadrolarda ara..." className="w-full min-w-0 bg-transparent text-[11px] text-slate-700 outline-none placeholder:text-slate-400" /></label>
                   <label className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[11px] text-slate-600"><SlidersHorizontal aria-hidden="true" className="size-3.5 text-slate-400" /><span className="sr-only">Duruma göre filtrele</span><select aria-label="Duruma göre filtrele" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="max-w-[82px] bg-transparent font-medium outline-none"><option>Tümü</option><option>Boş</option><option>Dolu</option><option>Bloke</option></select></label>

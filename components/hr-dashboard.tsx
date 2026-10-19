@@ -831,7 +831,7 @@ export default function HrDashboard() {
                   <p className="mt-1 text-[11px] text-slate-500">Kadro formu ve personel atamadaki seçilebilir değerleri yönetin.</p>
                 </div>
                 <div className="grid grid-cols-1 items-start gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
-                  <article aria-labelledby="department-units-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:col-span-2 xl:col-span-3">
+                  <article aria-labelledby="department-units-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
                       <div><p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p><h4 id="department-units-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Birimleri Yönetimi</h4><p className="mt-1 text-[11px] text-slate-500">Birim listesindeki değişiklikler yeni kadro formu ve tablo filtresine anında yansır.</p></div>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+<title id="title">UC-18 - Durum kodu tanımlarını yönetme</title><desc id="desc">UC-18: Durum kodu tanımlarını yönetme. Aktör: Admin.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker><filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity=".08"/></filter></defs>
+<style>
+ text{font-family:Arial,"DejaVu Sans",sans-serif;fill:#172b3a;text-anchor:middle}
+ .page{fill:#f8fafc} .boundary{fill:#fff;stroke:#91a9b8;stroke-width:2;rx:20;filter:url(#soft)}
+ .boundary-label{font-size:21px;font-weight:700;fill:#24465b;text-anchor:start}
+ .diagram-title{font-size:25px;font-weight:700;fill:#132f43;text-anchor:start}
+ .diagram-id{font-size:13px;font-weight:700;fill:#0f766e;text-anchor:end}
+ .primary{fill:#e7f2f7;stroke:#44758e;stroke-width:2.5;filter:url(#soft)}
+ .support{fill:#f1f5f9;stroke:#8498a8;stroke-width:2}
+ .primary-title{font-size:18px;font-weight:700;fill:#173c50}
+ .primary-detail{font-size:14px;fill:#486171}
+ .case-label{font-size:15px;font-weight:600;fill:#263f50}
+ .condition{font-size:12px;font-style:italic;fill:#64748b}
+ .actor circle,.actor path{fill:none;stroke:#334e60;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+ .actor-name{font-size:15px;font-weight:700;fill:#334e60}
+ .association{stroke:#526b7a;stroke-width:2;fill:none}
+ .relation{stroke:#64748b;stroke-width:1.8;stroke-dasharray:8 6;fill:none}
+ .stereo{font-size:13px;font-weight:700;fill:#526b7a}
+ .note{fill:#fff9e9;stroke:#d9b86c;stroke-width:1.5}
+ .note-text{font-size:13px;fill:#5c4b27;text-anchor:start}
+ .footer{font-size:12px;fill:#718096;text-anchor:start}
+</style>
+<rect class="page" width="1400" height="760"/>
+<text class="diagram-title" x="70" y="62" text-anchor="start">Kullanım Senaryosu Diyagramı</text>
+<text class="diagram-id" x="1325" y="62">UC-18</text>
+<rect class="boundary" x="300" y="115" width="1030" height="530" rx="20"/>
+<text class="boundary-label" x="330" y="153">İK Yönetim Sistemi</text>
+<path class="association" d="M180 397 H490"/>
+<g class="actor">
+      <circle cx="145" cy="350" r="22"/>
+      <path d="M145 372 V440 M110 397 H180 M145 440 L115 485 M145 440 L175 485"/>
+      <text x="145" y="520" class="actor-name">Admin</text>
+    </g>
+<path class="relation" d="M890 390 H910 V390 H930" marker-end="url(#arrow)"/><text class="stereo" x="910" y="380">«include»</text>
+<ellipse class="primary" cx="690" cy="390" rx="200" ry="100"/><text class="primary-title" x="690" y="373"><tspan x="690" dy="0">Durum kodu tanımlarını yönetme</tspan></text><text class="primary-detail" x="690" y="400"><tspan x="690" dy="0">Durum kodu ekler veya kaldırır</tspan><tspan x="690" dy="21">Kod büyük harfe dönüştürülür</tspan></text>
+<ellipse class="support" cx="1100" cy="390" rx="175" ry="68"/><text class="case-label" x="1100" y="380"><tspan x="1100" dy="0">Boş ve mükerrer değeri</tspan><tspan x="1100" dy="20">doğrulama</tspan></text><text class="condition" x="1100" y="440">[Her değişiklikte]</text>
+
+<text class="footer" x="70" y="720" text-anchor="start">UML Use Case · Rol ve süreç kapsamı: mevcut prototip ve iş analizi taslağı</text>
+</svg>

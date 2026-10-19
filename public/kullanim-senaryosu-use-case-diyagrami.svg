@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="auto" viewBox="0 0 2200 1600" role="img" aria-labelledby="svg-title svg-desc">
+  <title id="svg-title">İK Yönetim Sistemi — Kullanım Senaryosu Diyagramı</title>
+  <desc id="svg-desc">İK Sorumlusu, İK Müdürü ve Admin rollerinin kadro, personel atama, onay ve sistem parametreleri süreçlerindeki kullanım senaryolarını gösteren UML use case diyagramı.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f8fb; }
+      .system { fill: #ffffff; stroke: #456b85; stroke-width: 3; }
+      .divider { stroke: #d6e1e9; stroke-width: 2; stroke-dasharray: 8 8; }
+      .system-title { font: 700 28px Arial, sans-serif; fill: #17384d; }
+      .section-title { font: 700 17px Arial, sans-serif; letter-spacing: 1.1px; fill: #436276; }
+      .usecase { fill: #f1f7fb; stroke: #4d7894; stroke-width: 2.2; }
+      .usecase-green { fill: #edf8f5; stroke: #438679; stroke-width: 2.2; }
+      .usecase-amber { fill: #fff7e9; stroke: #b7791f; stroke-width: 2.2; }
+      .uc-text { font: 600 16px Arial, sans-serif; fill: #17384d; text-anchor: middle; }
+      .uc-small { font: 600 14px Arial, sans-serif; fill: #17384d; text-anchor: middle; }
+      .actor-line { fill: none; stroke: #40596a; stroke-width: 2.4; }
+      .relation { fill: none; stroke: #687d8b; stroke-width: 2.1; stroke-dasharray: 8 7; marker-end: url(#arrow); }
+      .actor { fill: #17384d; stroke: #17384d; stroke-width: 3; stroke-linecap: round; }
+      .actor-label { font: 700 17px Arial, sans-serif; fill: #17384d; text-anchor: middle; }
+      .stereotype { font: italic 13px Arial, sans-serif; fill: #647987; }
+      .group-label { font: 600 13px Arial, sans-serif; fill: #526b7b; }
+      .legend { font: 14px Arial, sans-serif; fill: #354e5e; }
+      .tag { fill: #e7eef3; }
+      .tag-text { font: 700 12px Arial, sans-serif; fill: #40596a; text-anchor: middle; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#687d8b"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="2200" height="1600"/>
+
+  <!-- System boundary -->
+  <rect class="system" x="350" y="90" width="1500" height="1410" rx="20"/>
+  <text class="system-title" x="1100" y="135" text-anchor="middle">İK Yönetim Sistemi</text>
+  <line class="divider" x1="375" y1="245" x2="1825" y2="245"/>
+  <line class="divider" x1="375" y1="865" x2="1825" y2="865"/>
+  <line class="divider" x1="375" y1="1120" x2="1825" y2="1120"/>
+  <text class="section-title" x="390" y="225">ORTAK ERİŞİM</text>
+  <text class="section-title" x="390" y="280">KADRO VE PERSONEL ATAMA</text>
+  <text class="section-title" x="390" y="900">ONAY SÜRECİ</text>
+  <text class="section-title" x="390" y="1155">SİSTEM PARAMETRELERİ</text>
+
+  <!-- Actor associations: solid UML associations -->
+  <g class="actor-line">
+    <!-- HR specialist associations branch from the actor's arm into the system. -->
+    <path d="M205 490 H275 V360 H540"/>
+    <path d="M275 490 V815"/>
+    <path d="M275 475 H900"/>
+    <path d="M275 600 H540"/>
+    <path d="M275 730 H540"/>
+    <path d="M275 730 H900"/>
+    <path d="M275 815 H900"/>
+    <path d="M275 490 V185 H885"/>
+    <!-- HR manager associations: a separate outer bus avoids crossing use cases. -->
+    <path d="M1995 875 H1920 V185 H1315"/>
+    <path d="M1920 875 V935 H890 V1005 H865"/>
+    <path d="M1920 875 H1880 V1100 H1320 V1005 H1300"/>
+    <!-- Admin associations -->
+    <path d="M1995 1255 H1875 V185 H1315"/>
+    <path d="M1875 1255 V1400"/>
+    <path d="M1875 1255 V1215 H865"/>
+    <path d="M1875 1315 H1300"/>
+    <path d="M1875 1315 V1460 H1300 V1400"/>
+    <path d="M1875 1400 H1765"/>
+  </g>
+
+  <!-- Common access use case -->
+  <ellipse class="usecase" cx="1100" cy="185" rx="215" ry="43"/>
+  <text class="uc-text" x="1100" y="181"><tspan x="1100">Sisteme giriş yapma ve</tspan><tspan x="1100" dy="20">rol bazlı erişim</tspan></text>
+  <path class="actor-line" d="M225 464 H285 V185 H885"/>
+  <path class="actor-line" d="M1980 850 H1940 V185 H1315"/>
+  <path class="actor-line" d="M1980 1235 H1925 V185 H1315"/>
+
+  <!-- Cadre and assignment use cases -->
+  <ellipse class="usecase" cx="700" cy="360" rx="160" ry="48"/>
+  <text class="uc-text" x="700" y="355"><tspan x="700">Kadro listesini ve</tspan><tspan x="700" dy="21">detaylarını görüntüleme</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="475" rx="200" ry="48"/>
+  <text class="uc-text" x="1100" y="470"><tspan x="1100">Kadro oluşturma / düzenleme</tspan><tspan x="1100" dy="21">talebi oluşturma</tspan></text>
+
+  <ellipse class="usecase" cx="700" cy="600" rx="160" ry="48"/>
+  <text class="uc-text" x="700" y="595"><tspan x="700">Kadro bloke etme</tspan><tspan x="700" dy="21">talebi oluşturma</tspan></text>
+
+  <ellipse class="usecase" cx="700" cy="730" rx="160" ry="48"/>
+  <text class="uc-text" x="700" y="725"><tspan x="700">Kadro derece değişikliği</tspan><tspan x="700" dy="21">talebi oluşturma</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="730" rx="200" ry="48"/>
+  <text class="uc-text" x="1100" y="725"><tspan x="1100">Personel ataması</tspan><tspan x="1100" dy="21">talebi oluşturma</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="815" rx="200" ry="40"/>
+  <text class="uc-small" x="1100" y="811"><tspan x="1100">Atama bilgilerini</tspan><tspan x="1100" dy="19">görüntüleme</tspan></text>
+
+  <ellipse class="usecase-green" cx="1580" cy="600" rx="185" ry="58"/>
+  <text class="uc-text" x="1580" y="593"><tspan x="1580">Talebi doğrulama ve</tspan><tspan x="1580" dy="22">onaya gönderme</tspan></text>
+
+  <ellipse class="usecase-amber" cx="1580" cy="760" rx="185" ry="48"/>
+  <text class="uc-text" x="1580" y="755"><tspan x="1580">Ekstra Durum</tspan><tspan x="1580" dy="21">seçeneği seçme</tspan></text>
+
+  <!-- Each request type includes validation and submission to approval. -->
+  <path class="relation" d="M1300 475 H1360 V565 H1395"/>
+  <text class="stereotype" x="1312" y="460">«include»</text>
+  <path class="relation" d="M1300 730 H1350 V635 H1395"/>
+  <text class="stereotype" x="1310" y="710">«include»</text>
+  <path class="relation" d="M860 600 H970 V620 H1395"/>
+  <text class="stereotype" x="875" y="584">«include»</text>
+  <path class="relation" d="M860 730 H940 V650 H1395"/>
+  <text class="stereotype" x="875" y="715">«include»</text>
+  <path class="relation" d="M1395 760 H1350 V730 H1300"/>
+  <text class="stereotype" x="1315" y="750">«extend»</text>
+  <text class="group-label" x="1470" y="830">[Ekstra Durum seçilirse]</text>
+
+  <!-- Approval process use cases -->
+  <ellipse class="usecase" cx="700" cy="1005" rx="165" ry="48"/>
+  <text class="uc-text" x="700" y="1000"><tspan x="700">Bekleyen talepleri</tspan><tspan x="700" dy="21">görüntüleme</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="1005" rx="200" ry="52"/>
+  <text class="uc-text" x="1100" y="999"><tspan x="1100">Talebi inceleme ve</tspan><tspan x="1100" dy="21">karar verme</tspan></text>
+
+  <ellipse class="usecase-green" cx="1580" cy="955" rx="170" ry="43"/>
+  <text class="uc-text" x="1580" y="961">Talebi onaylama</text>
+  <ellipse class="usecase-amber" cx="1580" cy="1060" rx="170" ry="43"/>
+  <text class="uc-text" x="1580" y="1055"><tspan x="1580">Gerekçe ile</tspan><tspan x="1580" dy="20">talebi reddetme</tspan></text>
+
+  <path class="relation" d="M1410 955 H1300 V980"/>
+  <text class="stereotype" x="1314" y="947">«extend»</text>
+  <path class="relation" d="M1410 1060 H1300 V1030"/>
+  <text class="stereotype" x="1314" y="1079">«extend»</text>
+  <text class="group-label" x="1320" y="1100">[Karar seçimine göre]</text>
+
+  <!-- System parameters use cases -->
+  <ellipse class="usecase" cx="700" cy="1215" rx="165" ry="45"/>
+  <text class="uc-text" x="700" y="1210"><tspan x="700">Sistem parametrelerini</tspan><tspan x="700" dy="21">görüntüleme</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="1315" rx="200" ry="48"/>
+  <text class="uc-text" x="1100" y="1310"><tspan x="1100">Kadro birimi</tspan><tspan x="1100" dy="21">tanımlarını yönetme</tspan></text>
+
+  <ellipse class="usecase" cx="1100" cy="1400" rx="200" ry="48"/>
+  <text class="uc-small" x="1100" y="1395"><tspan x="1100">Ünvan, Hizmet Sınıfı ve</tspan><tspan x="1100" dy="19">Durum Kodu yönetme</tspan></text>
+
+  <ellipse class="usecase" cx="1580" cy="1400" rx="185" ry="48"/>
+  <text class="uc-text" x="1580" y="1395"><tspan x="1580">Ekstra Durum</tspan><tspan x="1580" dy="21">seçeneklerini yönetme</tspan></text>
+
+  <!-- Role actors outside system boundary -->
+  <g class="actor" aria-label="İK Sorumlusu aktörü">
+    <circle cx="170" cy="445" r="22" fill="none"/>
+    <path d="M170 467 V535 M135 490 H205 M170 535 L140 575 M170 535 L200 575" fill="none"/>
+    <text class="actor-label" x="170" y="610" stroke="none">İK Sorumlusu</text>
+  </g>
+  <g class="actor" aria-label="İK Müdürü aktörü">
+    <circle cx="2030" cy="830" r="22" fill="none"/>
+    <path d="M2030 852 V920 M1995 875 H2065 M2030 920 L2000 960 M2030 920 L2060 960" fill="none"/>
+    <text class="actor-label" x="2030" y="995" stroke="none">İK Müdürü</text>
+  </g>
+  <g class="actor" aria-label="Admin aktörü">
+    <circle cx="2030" cy="1210" r="22" fill="none"/>
+    <path d="M2030 1232 V1300 M1995 1255 H2065 M2030 1300 L2000 1340 M2030 1300 L2060 1340" fill="none"/>
+    <text class="actor-label" x="2030" y="1375" stroke="none">Admin</text>
+  </g>
+
+  <!-- Legend -->
+  <line x1="380" y1="1530" x2="450" y2="1530" class="actor-line"/>
+  <text class="legend" x="465" y="1535">Aktör ilişkisi</text>
+  <line x1="620" y1="1530" x2="690" y2="1530" class="relation"/>
+  <text class="legend" x="705" y="1535">«include» / «extend» ilişkisi</text>
+  <ellipse class="usecase" cx="1030" cy="1530" rx="42" ry="17"/>
+  <text class="legend" x="1085" y="1535">Kullanım senaryosu</text>
+  <text class="legend" x="1820" y="1535" text-anchor="end">Rol–yetki matrisi ve prototip akışına göre</text>
+  <text class="legend" x="1100" y="1575" text-anchor="middle">İş kuralı: Talep sahibi, kendi talebi için onay veya ret kararı veremez.</text>
+</svg>

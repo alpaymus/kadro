@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 850" role="img" aria-labelledby="title desc">
+<title id="title">Talep yaşam döngüsü — UML Durum Makinesi Diyagramı</title><desc id="desc">Talep durumlarının taslaktan doğrulama, bekleme, onay, ret ve çakışma nedeniyle uygulanamama durumlarına geçişlerini gösteren UML durum makinesi.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10" fill="none" stroke="#52657a" stroke-width="1.7"/></marker><style>.bg{fill:#f5f8fc}.head{font:700 25px Arial,sans-serif;fill:#18324b}.sub{font:15px Arial,sans-serif;fill:#52657a}.state{fill:#fff;stroke:#246b91;stroke-width:1.8}.term{fill:#eaf3fb;stroke:#18324b;stroke-width:2}.flow{fill:none;stroke:#52657a;stroke-width:1.7;marker-end:url(#arrow)}.txt{font:15px Arial,sans-serif;fill:#18324b}.small{font:13px Arial,sans-serif;fill:#52657a}.bold{font-weight:700}</style></defs>
+<rect class="bg" width="1500" height="850"/><text class="head" x="55" y="52">Talep yaşam döngüsü · Durum makinesi</text><text class="sub" x="55" y="80">UML 2.5.1 · State machine · Ret ve çakışma terminal durumlarıdır</text>
+<!-- transitions -->
+<g class="flow"><path d="M130 410H260"/><path d="M430 410H555"/><path d="M745 410H875"/><path d="M1055 390L1190 245"/><path d="M1055 430L1190 575"/><path d="M645 460V705H1190"/></g>
+<!-- initial -->
+<circle cx="112" cy="410" r="12" fill="#18324b"/>
+<!-- states -->
+<g class="state"><rect x="260" y="370" width="170" height="80" rx="24"/><rect x="555" y="370" width="190" height="80" rx="24"/><rect x="875" y="370" width="180" height="80" rx="24"/><rect x="1190" y="205" width="200" height="80" rx="24"/><rect x="1190" y="535" width="200" height="80" rx="24"/><rect x="1190" y="665" width="200" height="80" rx="24"/></g>
+<g class="txt bold" text-anchor="middle"><text x="345" y="416">Taslak</text><text x="650" y="416">Doğrulanıyor</text><text x="965" y="416">Beklemede</text><text x="1290" y="251">Onaylandı</text><text x="1290" y="581">Reddedildi</text><text x="1290" y="699"><tspan x="1290">Uygulanamadı</tspan><tspan class="small" x="1290" dy="19">(kaynak çakışması)</tspan></text></g>
+<!-- transition labels -->
+<g class="small"><text x="194" y="395">oluştur</text><text x="473" y="395">gönder</text><text x="795" y="395">[geçerli] / kuyruğa ekle</text><text x="1071" y="275">[onay + kaynak güncel]</text><text x="1075" y="550">[ret] / gerekçeyi kaydet</text><text x="810" y="697">[onay anında kaynak değişmiş]</text></g>
+<!-- terminal markers -->
+<circle class="term" cx="1435" cy="245" r="15"/><circle cx="1435" cy="245" r="9" fill="#18324b"/><path class="flow" d="M1390 245H1418"/>
+<circle class="term" cx="1435" cy="575" r="15"/><circle cx="1435" cy="575" r="9" fill="#18324b"/><path class="flow" d="M1390 575H1418"/>
+<circle class="term" cx="1435" cy="705" r="15"/><circle cx="1435" cy="705" r="9" fill="#18324b"/><path class="flow" d="M1390 705H1418"/>
+<!-- return to draft on validation failure -->
+<path class="flow" d="M650 370V330H345V370"/><text class="small" x="455" y="321">[geçersiz] / düzeltme bekle</text>
+<!-- note -->
+<rect x="75" y="680" width="500" height="112" rx="8" fill="#fff3dd" stroke="#c27a16" stroke-width="1.5"/><text class="txt bold" x="95" y="708">İş kuralı</text><text class="small" x="95" y="733">Onayda kapasite / derece yeniden doğrulanır.</text><text class="small" x="95" y="754">Çakışmada talep uygulanmaz; geçmişe alınır.</text><text class="small" x="95" y="775">Audit kaydı tutulur; yeni talep gerekir.</text>
+<text class="small" x="55" y="815">Durum adları analiz modelidir; kesin kod listesi ve ret / yeniden gönderim politikası iş sahibi onayıyla netleştirilir.</text>
+</svg>

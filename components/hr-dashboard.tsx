@@ -382,7 +382,7 @@ export default function HrDashboard() {
   const [slots, setSlots] = useState<Slot[]>(initialSlots)
   const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
   const [currentUserId, setCurrentUserId] = useState<string>(mockHrUsers[0].id)
-  const [departmentUnits, setDepartmentUnits] = useState<string[]>(["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"])
+  const [departmentUnits, setDepartmentUnits] = useState<string[]>(["Personel Daire Başkanlığı", "Bilgi Teknolojileri Genel Müdürlüğü", "Strateji Geliştirme Başkanlığı", "BTGM İş Geliştirme Daire Başkanlığı"])
   const [newDepartment, setNewDepartment] = useState("")
   const [departmentMessage, setDepartmentMessage] = useState("")
   const [positionTitles, setPositionTitles] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.title))).sort((first, second) => first.localeCompare(second, "tr-TR")))
@@ -740,7 +740,7 @@ export default function HrDashboard() {
 
     if (editingSlotId) {
       if (!submitForApproval({ kind: "slot-update", slotId: editingSlotId, updates: updatedFields })) return
-      setFormMessage(`${editingSlotId} numaralı kadro değişikliği onaya gönderildi.`)
+      setFormMessage(`${editingSlotId} numaral�� kadro değişikliği onaya gönderildi.`)
       resetForm()
       return
     }

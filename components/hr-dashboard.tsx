@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react"
 import HrApprovals from "@/components/hr-approvals"
 import HrRaciMatrix from "@/components/hr-raci-matrix"
+import HrReports, { buildHrReportCsv } from "@/components/hr-reports"
 import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type HrRole, type Slot, type SlotStatus } from "@/components/hr-types"
 import {
   ArrowDownToLine,
@@ -36,18 +37,18 @@ function getTodayDate() {
 }
 
 const initialSlots: Slot[] = [
-  { id: "KDR-2025-001", title: "Memur", department: "Personel Daire Başkanlığı", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "SGK", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
-  { id: "KDR-2025-002", title: "V.H.K.İ.", department: "Bilgi Teknolojileri Genel Müdürlüğü", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-003", title: "Programcı", department: "Strateji Geliştirme Başkanlığı", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-01-22", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
-  { id: "KDR-2025-004", title: "Şube Müdürü", department: "BTGM İş Geliştirme Daire Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-04-16", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-005", title: "Daire Başkanlığı", department: "Personel Daire Başkanlığı", serviceClass: "Teknik Hizmetler", degree: "7. Derece", approvalDate: "2025-05-08", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-006", title: "Memur", department: "Bilgi Teknolojileri Genel Müdürlüğü", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-27", vacantCount: 1, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
-  { id: "KDR-2025-007", title: "V.H.K.İ.", department: "Strateji Geliştirme Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-06-10", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-008", title: "Programcı", department: "BTGM İş Geliştirme Daire Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-01-14", vacantCount: 0, filledCount: 1, statusCode: "SGK", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
-  { id: "KDR-2025-009", title: "Şube Müdürü", department: "Personel Daire Başkanlığı", serviceClass: "Teknik Hizmetler", degree: "6. Derece", approvalDate: "2025-07-03", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-010", title: "Daire Başkanlığı", department: "Bilgi Teknolojileri Genel Müdürlüğü", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-21", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-011", title: "Memur", department: "Strateji Geliştirme Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-02-05", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
-  { id: "KDR-2025-012", title: "V.H.K.İ.", department: "BTGM İş Geliştirme Daire Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-001", title: "Memur", department: "Personel Daire Başkanlığı", location: "Ankara", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "SGK", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
+  { id: "KDR-2025-002", title: "V.H.K.İ.", department: "Bilgi Teknolojileri Genel Müdürlüğü", location: "Ankara", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-003", title: "Programcı", department: "Strateji Geliştirme Başkanlığı", location: "İstanbul", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-01-22", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
+  { id: "KDR-2025-004", title: "Şube Müdürü", department: "BTGM İş Geliştirme Daire Başkanlığı", location: "İstanbul", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-04-16", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-005", title: "Daire Başkanlığı", department: "Personel Daire Başkanlığı", location: "Ankara", serviceClass: "Teknik Hizmetler", degree: "7. Derece", approvalDate: "2025-05-08", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-006", title: "Memur", department: "Bilgi Teknolojileri Genel Müdürlüğü", location: "Ankara", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-27", vacantCount: 1, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
+  { id: "KDR-2025-007", title: "V.H.K.İ.", department: "Strateji Geliştirme Başkanlığı", location: "İzmir", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-06-10", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-008", title: "Programcı", department: "BTGM İş Geliştirme Daire Başkanlığı", location: "İstanbul", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-01-14", vacantCount: 0, filledCount: 1, statusCode: "SGK", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
+  { id: "KDR-2025-009", title: "Şube Müdürü", department: "Personel Daire Başkanlığı", location: "İzmir", serviceClass: "Teknik Hizmetler", degree: "6. Derece", approvalDate: "2025-07-03", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-010", title: "Daire Başkanlığı", department: "Bilgi Teknolojileri Genel Müdürlüğü", location: "Ankara", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-21", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-011", title: "Memur", department: "Strateji Geliştirme Başkanlığı", location: "İzmir", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-02-05", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
+  { id: "KDR-2025-012", title: "V.H.K.İ.", department: "BTGM İş Geliştirme Daire Başkanlığı", location: "İstanbul", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
 type DashboardSection = "workspace" | "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "raci" | "system-parameters"
@@ -382,7 +383,7 @@ function getFilledCount(slot: Slot) {
 
 export default function HrDashboard() {
   const [slots, setSlots] = useState<Slot[]>(initialSlots)
-  const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
+  const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, location: slot.location, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
   const [currentUserId, setCurrentUserId] = useState<string>(mockHrUsers[0].id)
   const [departmentUnits, setDepartmentUnits] = useState<string[]>(["Personel Daire Başkanlığı", "Bilgi Teknolojileri Genel Müdürlüğü", "Strateji Geliştirme Başkanlığı", "BTGM İş Geliştirme Daire Başkanlığı"])
   const [newDepartment, setNewDepartment] = useState("")
@@ -418,7 +419,7 @@ export default function HrDashboard() {
   const [formMessage, setFormMessage] = useState("")
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
-  const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
+  const [form, setForm] = useState({ unit: "", title: "", serviceClass: "", degree: "", location: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
   const [activeSection, setActiveSection] = useState<DashboardSection>("workspace")
   const [assignmentSlotId, setAssignmentSlotId] = useState("")
   const [employeeName, setEmployeeName] = useState("")
@@ -651,6 +652,7 @@ export default function HrDashboard() {
       title: slot.title,
       department: slot.department,
       degree: slot.degree,
+      location: slot.location,
       count,
       processDate: blockForm.processDate,
       reason,
@@ -692,19 +694,19 @@ export default function HrDashboard() {
   }
 
   function handleExport() {
-    const columns = ["Kadro ID", "Birimi", "Kadro Ünvanı", "Hizmet Sınıfı", "Kadro Derecesi", "Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"]
-    const rows = slots.map((slot) => [slot.id, slot.department, slot.title, slot.serviceClass ?? "", slot.degree, slot.approvalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])
-    const csv = "\uFEFF" + [columns, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
+    const csv = activeSection === "reports"
+      ? buildHrReportCsv({ slots, blockedRecords, pendingRequests: approvalRequests.filter((request) => request.status === "pending"), departmentUnits })
+      : "\uFEFF" + [["Kadro ID", "Birimi", "Kadro Ünvanı", "Hizmet Sınıfı", "Kadro Derecesi", "Lokasyon", "Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"], ...slots.map((slot) => [slot.id, slot.department, slot.title, slot.serviceClass ?? "", slot.degree, slot.location ?? "Lokasyon belirtilmemiş", slot.approvalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const link = document.createElement("a")
     link.href = url
-    link.download = "kadro-raporu.csv"
+    link.download = activeSection === "reports" ? "kadro-dagilim-raporu.csv" : "kadro-raporu.csv"
     link.click()
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   function resetForm() {
-    setForm({ unit: "", title: "", serviceClass: "", degree: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
+    setForm({ unit: "", title: "", serviceClass: "", degree: "", location: "", approvalDate: "", vacantCount: "1", filledCount: "0", statusCode: "" })
     setEditingSlotId(null)
   }
 
@@ -715,6 +717,7 @@ export default function HrDashboard() {
       title: slot.title,
       serviceClass: slot.serviceClass ?? "",
       degree: slot.degree,
+      location: slot.location ?? "",
       approvalDate: slot.approvalDate ?? "",
       vacantCount: String(getVacantCount(slot)),
       filledCount: String(getFilledCount(slot)),
@@ -734,6 +737,7 @@ export default function HrDashboard() {
       department: form.unit,
       degree: form.degree,
       serviceClass: form.serviceClass.trim(),
+      location: form.location.trim(),
       approvalDate: form.approvalDate,
       vacantCount,
       filledCount,
@@ -803,11 +807,11 @@ export default function HrDashboard() {
             </div>
             {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <div className="flex items-center gap-2">
               <button type="button" onClick={handleExport} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"><ArrowDownToLine aria-hidden="true" className="size-3.5" /> Dışa aktar</button>
-              <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>
+              {activeSection !== "reports" && <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>}
             </div>}
           </section>
 
-          {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && activeSection !== "reports" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen kadro" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
@@ -878,11 +882,12 @@ export default function HrDashboard() {
                   <FormField label="Hizmet Sınıfı"><FieldControl><select required aria-label="Hizmet Sınıfı" value={form.serviceClass} onChange={(event) => setForm({ ...form, serviceClass: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Sınıf seçin</option>{editingSlotId && form.serviceClass && !serviceClasses.includes(form.serviceClass) && <option value={form.serviceClass}>{form.serviceClass} (mevcut kayıt)</option>}{serviceClasses.map((serviceClass) => <option key={serviceClass} value={serviceClass}>{serviceClass}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                   <FormField label="Kadro Derecesi"><FieldControl><select required value={form.degree} onChange={(event) => setForm({ ...form, degree: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Derece seçin</option>{["3. Derece", "4. Derece", "5. Derece", "6. Derece", "7. Derece", "8. Derece"].map((item) => <option key={item}>{item}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
                   <FormField label="Boş Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.vacantCount} onChange={(event) => setForm({ ...form, vacantCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                   <FormField label="Dolu Kadro Sayısı"><FieldControl><input required type="number" min="0" step="1" inputMode="numeric" value={form.filledCount} onChange={(event) => setForm({ ...form, filledCount: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                   <FormField label="Durum Kodu"><FieldControl><select required aria-label="Durum Kodu" value={form.statusCode} onChange={(event) => setForm({ ...form, statusCode: event.target.value })} className="w-full appearance-none bg-transparent text-xs text-slate-700 outline-none"><option value="" disabled>Kod seçin</option>{editingSlotId && form.statusCode && !statusCodes.includes(form.statusCode) && <option value={form.statusCode}>{form.statusCode} (mevcut kayıt)</option>}{statusCodes.map((statusCode) => <option key={statusCode} value={statusCode}>{statusCode}</option>)}</select><ChevronDown aria-hidden="true" className="ml-2 size-3.5 shrink-0 text-slate-400" /></FieldControl></FormField>
                   <FormField label="Onay Tarihi"><FieldControl><input required type="date" value={form.approvalDate} onChange={(event) => setForm({ ...form, approvalDate: event.target.value })} className="w-full min-w-0 bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
+                  <FormField label="Lokasyon (isteğe bağlı)"><FieldControl><input aria-label="Lokasyon (isteğe bağlı)" type="text" maxLength={120} placeholder="İl / kampüs" value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} className="w-full bg-transparent text-xs text-slate-700 outline-none" /></FieldControl></FormField>
                 </div>
                 <div className="mt-1 border-t border-slate-100 pt-4">
                   {formMessage && <p role="status" className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-teal-700"><Check aria-hidden="true" className="size-3.5" />{formMessage}</p>}
@@ -1022,6 +1027,8 @@ export default function HrDashboard() {
                 </form>
               </article>
             </section>
+          ) : activeSection === "reports" ? (
+            <HrReports slots={slots} blockedRecords={blockedRecords} pendingRequests={approvalRequests.filter((request) => request.status === "pending")} departmentUnits={departmentUnits} />
           ) : activeSection === "approvals" ? (
             currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} canCreateDemoAssignment={Boolean(demoAssignmentSlot)} onCreateDemoAssignment={createDemoAssignmentRequest} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
           ) : activeSection === "raci" ? (

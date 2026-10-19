@@ -1,0 +1,13 @@
+{
+  "name": "Kadro Yönetimi",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "postCreateCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "postAttachCommand": "pnpm dev",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Kadro Yönetimi",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}

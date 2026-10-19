@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react"
 import HrApprovals from "@/components/hr-approvals"
+import HrRaciMatrix from "@/components/hr-raci-matrix"
 import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type HrRole, type Slot, type SlotStatus } from "@/components/hr-types"
 import {
   ArrowDownToLine,
@@ -49,7 +50,7 @@ const initialSlots: Slot[] = [
   { id: "KDR-2025-012", title: "V.H.K.İ.", department: "BTGM İş Geliştirme Daire Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
-type DashboardSection = "workspace" | "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "system-parameters"
+type DashboardSection = "workspace" | "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "raci" | "system-parameters"
 type NavigationItem = { id: DashboardSection; label: string; icon: typeof BriefcaseBusiness }
 type NavigationGroup = { label: string; items: NavigationItem[] }
 
@@ -64,6 +65,7 @@ const navigationGroups: NavigationGroup[] = [
   { label: "İZLEME", items: [
     { id: "approvals", label: "Onay Merkezi", icon: ClipboardCheck },
     { id: "reports", label: "Raporlar", icon: FileBarChart },
+    { id: "raci", label: "Yetki Rol Matrisi", icon: ClipboardCheck },
   ] },
   { label: "SİSTEM", items: [{ id: "system-parameters", label: "Sistem Yönetimi", icon: Settings2 }] },
 ]
@@ -461,6 +463,7 @@ export default function HrDashboard() {
     "degree-change": { title: "Kadro derece değişikliği", subtitle: "Kadro derecelerini güncelleyin ve değişiklikleri yönetin." },
     approvals: { title: "Onay merkezi", subtitle: "Kadro işlemlerini gözden geçirin ve karar verin." },
     reports: { title: "Raporlar", subtitle: "Organizasyon kadronuzun güncel dağılımını ve durumunu inceleyin." },
+    raci: { title: "Yetki Rol Matrisi (RACI)", subtitle: "İK süreçlerindeki görev, onay ve bilgilendirme sorumluluklarını görüntüleyin." },
     "system-parameters": { title: "Sistem yönetimi", subtitle: "Kadro birimleri ile kadro ve atama formu seçeneklerini yönetin." },
   }[activeSection]
 
@@ -798,13 +801,13 @@ export default function HrDashboard() {
                           <h2 id="page-title" className="text-[26px] font-semibold tracking-[-0.04em] text-slate-900 sm:text-[30px]">{sectionCopy.title}</h2>
               <p className="mt-1.5 text-[13px] text-slate-500">{sectionCopy.subtitle}</p>
             </div>
-            {activeSection !== "system-parameters" && activeSection !== "workspace" && <div className="flex items-center gap-2">
+            {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <div className="flex items-center gap-2">
               <button type="button" onClick={handleExport} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"><ArrowDownToLine aria-hidden="true" className="size-3.5" /> Dışa aktar</button>
               <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>
             </div>}
           </section>
 
-          {activeSection !== "system-parameters" && activeSection !== "workspace" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen kadro" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
@@ -1021,6 +1024,8 @@ export default function HrDashboard() {
             </section>
           ) : activeSection === "approvals" ? (
             currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} canCreateDemoAssignment={Boolean(demoAssignmentSlot)} onCreateDemoAssignment={createDemoAssignmentRequest} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
+          ) : activeSection === "raci" ? (
+            <HrRaciMatrix />
           ) : (
             <section className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
               <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">

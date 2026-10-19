@@ -5,7 +5,7 @@
 <!-- Associations -->
 <g class="rel"><path d="M195 330V400"/><path d="M340 245H450V390H550"/><path d="M850 385H1030V255H1350"/><path d="M850 450H1120V455H1350"/><path d="M850 500H1320V750H1450"/></g>
 <!-- User -->
-<g><rect class="cls" x="50" y="180" width="290" height="150"/><path class="hdr" d="M50 180H340V219H50Z"/><text class="name" x="195" y="206" text-anchor="middle">Kullanıcı</text><path class="line" d="M50 219H340"/><text class="attr" x="67" y="245">userId: Kimlik</text><text class="attr" x="67" y="269">kullanıcıAdı: Metin</text><text class="attr" x="67" y="293">durum: HesapDurumu</text><text class="attr" x="67" y="317">+ kimlikDoğrula()</text></g>
+<g><rect class="cls" x="50" y="180" width="290" height="150"/><path class="hdr" d="M50 180H340V219H50Z"/><text class="name" x="195" y="206" text-anchor="middle">Kullanıcı</text><path class="line" d="M50 219H340"/><text class="attr" x="67" y="245">userId: UUID</text><text class="attr" x="67" y="269">identitySubject: Metin</text><text class="attr" x="67" y="293">durum: HesapDurumu</text><text class="attr" x="67" y="317">+ erişimDenetle()</text></g>
 <!-- Role -->
 <g><rect class="cls" x="50" y="400" width="290" height="132"/><path class="hdr" d="M50 400H340V439H50Z"/><text class="name" x="195" y="426" text-anchor="middle">Rol</text><path class="line" d="M50 439H340"/><text class="attr" x="67" y="465">rolId: Kimlik</text><text class="attr" x="67" y="489">ad: RolAdı</text><text class="small" x="67" y="514">İK Sorumlusu | İK Müdürü | Admin</text></g>
 <!-- Abstract request -->

@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react"
 import HrApprovals from "@/components/hr-approvals"
 import HrRaciMatrix from "@/components/hr-raci-matrix"
+import HrReports, { buildHrReportCsv } from "@/components/hr-reports"
 import { mockHrUsers, type ApprovalPayload, type BlockedRecord, type HrApprovalRequest, type HrRole, type Slot, type SlotStatus } from "@/components/hr-types"
 import {
   ArrowDownToLine,
@@ -692,13 +693,13 @@ export default function HrDashboard() {
   }
 
   function handleExport() {
-    const columns = ["Kadro ID", "Birimi", "Kadro Ünvanı", "Hizmet Sınıfı", "Kadro Derecesi", "Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"]
-    const rows = slots.map((slot) => [slot.id, slot.department, slot.title, slot.serviceClass ?? "", slot.degree, slot.approvalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])
-    const csv = "\uFEFF" + [columns, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
+    const csv = activeSection === "reports"
+      ? buildHrReportCsv({ slots, blockedRecords, pendingRequests: approvalRequests.filter((request) => request.status === "pending"), departmentUnits })
+      : "\uFEFF" + [["Kadro ID", "Birimi", "Kadro Ünvanı", "Hizmet Sınıfı", "Kadro Derecesi", "Onay Tarihi", "Boş Kadro Sayısı", "Dolu Kadro Sayısı", "Durum Kodu", "Durum", "Atanmış Personel"], ...slots.map((slot) => [slot.id, slot.department, slot.title, slot.serviceClass ?? "", slot.degree, slot.approvalDate ?? "", getVacantCount(slot), getFilledCount(slot), slot.statusCode ?? "", slot.status, slot.employee ?? "Atama bekliyor"])].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const link = document.createElement("a")
     link.href = url
-    link.download = "kadro-raporu.csv"
+    link.download = activeSection === "reports" ? "kadro-yonetici-birim-bekleyen-talepler.csv" : "kadro-raporu.csv"
     link.click()
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
@@ -803,11 +804,11 @@ export default function HrDashboard() {
             </div>
             {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <div className="flex items-center gap-2">
               <button type="button" onClick={handleExport} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"><ArrowDownToLine aria-hidden="true" className="size-3.5" /> Dışa aktar</button>
-              <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>
+              {activeSection !== "reports" && <button type="button" onClick={() => setActiveSection("positions")} className="inline-flex h-9 items-center gap-2 rounded-lg bg-teal-700 px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"><Plus aria-hidden="true" className="size-3.5" /> Yeni kadro</button>}
             </div>}
           </section>
 
-          {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {activeSection !== "system-parameters" && activeSection !== "workspace" && activeSection !== "raci" && activeSection !== "reports" && <section aria-label="Kadro istatistikleri" className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Toplam kadro" value={totals.total} helper="Aktif organizasyon kadrosu" icon={UsersRound} tone="slate" trend="%8,2" />
             <StatCard label="Boş kadro" value={totals.vacant} helper="Atama bekleyen kadro" icon={BriefcaseBusiness} tone="teal" />
             <StatCard label="Dolu kadro" value={totals.filled} helper={`Kadro doluluk oranı %${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}`} icon={UsersRound} tone="slate" />
@@ -1022,6 +1023,8 @@ export default function HrDashboard() {
                 </form>
               </article>
             </section>
+          ) : activeSection === "reports" ? (
+            <HrReports slots={slots} blockedRecords={blockedRecords} pendingRequests={approvalRequests.filter((request) => request.status === "pending")} departmentUnits={departmentUnits} />
           ) : activeSection === "approvals" ? (
             currentUser.role === "hr-manager" ? <HrApprovals requests={approvalRequests} currentUser={currentUser} feedback={approvalFeedback} canCreateDemoAssignment={Boolean(demoAssignmentSlot)} onCreateDemoAssignment={createDemoAssignmentRequest} onApprove={(requestId) => handleApprovalDecision(requestId, "approved")} onReject={(requestId) => handleApprovalDecision(requestId, "rejected")} /> : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Onay ekranı yalnızca İK Müdürü rolüyle kullanılabilir.</p>
           ) : activeSection === "raci" ? (

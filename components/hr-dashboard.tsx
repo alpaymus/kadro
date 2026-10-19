@@ -385,7 +385,7 @@ export default function HrDashboard() {
   const [departmentUnits, setDepartmentUnits] = useState<string[]>(["Personel Daire Başkanlığı", "Bilgi Teknolojileri Genel Müdürlüğü", "Strateji Geliştirme Başkanlığı", "BTGM İş Geliştirme Daire Başkanlığı"])
   const [newDepartment, setNewDepartment] = useState("")
   const [departmentMessage, setDepartmentMessage] = useState("")
-  const [positionTitles, setPositionTitles] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.title))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [positionTitles, setPositionTitles] = useState<string[]>(["Memur", "V.H.K.İ.", "Programcı", "Şube Müdürü", "Daire Başkanlığı"])
   const [serviceClasses, setServiceClasses] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.serviceClass).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [statusCodes, setStatusCodes] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.statusCode).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [extraStatusOptions, setExtraStatusOptions] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.extraStatus).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))

@@ -761,7 +761,7 @@ export default function HrDashboard() {
             <div className="flex items-center gap-3">
               <div className="flex size-9 items-center justify-center rounded-xl bg-teal-500 text-white md:hidden"><Building2 aria-hidden="true" className="size-[18px]" /></div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-400">İnsan & Kültür <span className="px-1 text-slate-300">/</span> {sectionCopy.title}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-400">{sectionCopy.title}</p>
                 <h1 className="mt-0.5 text-[14px] font-semibold text-slate-800">{sectionCopy.title}</h1>
               </div>
             </div>

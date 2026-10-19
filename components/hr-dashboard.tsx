@@ -795,8 +795,7 @@ export default function HrDashboard() {
         <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
           <section aria-labelledby="page-title" className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              {activeSection !== "system-parameters" && <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold text-teal-800"><span className="size-1.5 rounded-full bg-teal-500" /> 2025 ORGANİZASYON PLANI</div>}
-              <h2 id="page-title" className="text-[26px] font-semibold tracking-[-0.04em] text-slate-900 sm:text-[30px]">{sectionCopy.title}</h2>
+                          <h2 id="page-title" className="text-[26px] font-semibold tracking-[-0.04em] text-slate-900 sm:text-[30px]">{sectionCopy.title}</h2>
               <p className="mt-1.5 text-[13px] text-slate-500">{sectionCopy.subtitle}</p>
             </div>
             {activeSection !== "system-parameters" && activeSection !== "workspace" && <div className="flex items-center gap-2">

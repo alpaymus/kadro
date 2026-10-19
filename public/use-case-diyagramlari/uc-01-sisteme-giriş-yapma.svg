@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
-<title id="title">UC-01 - Sisteme giriş yapma</title><desc id="desc">UC-01: Sisteme giriş yapma. Aktör: Sisteme erişim yetkili kullanıcı.</desc>
+<title id="title">UC-01 - Kurum SSO’su ile sisteme giriş</title><desc id="desc">UC-01: Kurum kimlik sağlayıcısı üzerinden SSO ile sisteme giriş. Aktör: Sisteme erişim yetkili kullanıcı. OIDC/SAML protokolü ve kimlik claim eşlemesi açık karardır.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker><filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity=".08"/></filter></defs>
 <style>
  text{font-family:Arial,"DejaVu Sans",sans-serif;fill:#172b3a;text-anchor:middle}
@@ -34,7 +34,7 @@
       <text x="145" y="520" class="actor-name">Sisteme erişim yetkili kullanıcı</text>
     </g>
 <path class="relation" d="M890 390 H910 V390 H930" marker-end="url(#arrow)"/><text class="stereo" x="910" y="380">«include»</text>
-<ellipse class="primary" cx="690" cy="390" rx="200" ry="100"/><text class="primary-title" x="690" y="384"><tspan x="690" dy="0">Sisteme giriş yapma</tspan></text><text class="primary-detail" x="690" y="411"><tspan x="690" dy="0">Kimlik bilgileriyle sisteme giriş yapar</tspan></text>
+<ellipse class="primary" cx="690" cy="390" rx="200" ry="100"/><text class="primary-title" x="690" y="384"><tspan x="690" dy="0">Kurum SSO’su ile giriş yapma</tspan></text><text class="primary-detail" x="690" y="411"><tspan x="690" dy="0">Kurum IdP’siyle kimliğini doğrular</tspan></text>
 <ellipse class="support" cx="1100" cy="390" rx="175" ry="68"/><text class="case-label" x="1100" y="380"><tspan x="1100" dy="0">Rol bazlı erişim</tspan><tspan x="1100" dy="20">sağlama</tspan></text><text class="condition" x="1100" y="440">[Başarılı girişte]</text>
 
 <text class="footer" x="70" y="720" text-anchor="start">UML Use Case · Rol ve süreç kapsamı: mevcut prototip ve iş analizi taslağı</text>

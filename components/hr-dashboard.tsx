@@ -387,7 +387,7 @@ export default function HrDashboard() {
   const [departmentMessage, setDepartmentMessage] = useState("")
   const [positionTitles, setPositionTitles] = useState<string[]>(["Memur", "V.H.K.İ.", "Programcı", "Şube Müdürü", "Daire Başkanlığı"])
   const [serviceClasses, setServiceClasses] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.serviceClass).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
-  const [statusCodes, setStatusCodes] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.statusCode).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [statusCodes, setStatusCodes] = useState<string[]>(["SGK", "Şahsa Bağlı"])
   const [extraStatusOptions, setExtraStatusOptions] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.extraStatus).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [departmentFilter, setDepartmentFilter] = useState("Tümü")
   const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])

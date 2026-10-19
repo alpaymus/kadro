@@ -824,40 +824,38 @@ export default function HrDashboard() {
             />
           ) : activeSection === "system-parameters" ? (
             isAdmin ? (
-              <section aria-labelledby="department-units-title" className="grid grid-cols-1 items-start gap-5">
-                <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
-                  <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
-                    <div><p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Yönetim alanı</p><h3 id="department-units-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Birimleri Yönetimi</h3><p className="mt-1 text-[11px] text-slate-500">Birim listesindeki değişiklikler yeni kadro formu ve tablo filtresine anında yansır.</p></div>
-                  </div>
-                  <form onSubmit={handleAddDepartment} className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:px-6">
-                    <FormField label="Yeni departman adı">
-                      <FieldControl className="h-11 rounded-xl bg-slate-50/70 px-3.5"><input required maxLength={80} value={newDepartment} onChange={(event) => setNewDepartment(event.target.value)} placeholder="Örn: Pazarlama Daire Bşk." className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl>
-                    </FormField>
-                    <button type="submit" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20"><Plus aria-hidden="true" className="size-4" />Birim ekle</button>
-                  </form>
-                  {departmentMessage && <p role="status" className="mx-5 mt-4 rounded-lg border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800 sm:mx-6">{departmentMessage}</p>}
-                  <div className="p-5 sm:px-6 sm:py-6">
-                    <div className="mb-3 flex items-center justify-between gap-3"><h4 className="text-xs font-semibold text-slate-800">Tanımlı kadro birimleri</h4><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">{departmentUnits.length} birim</span></div>
-                    {departmentUnits.length ? <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
-                      {departmentUnits.map((unit) => <li key={unit} className="flex items-center justify-between gap-4 px-4 py-3"><span className="min-w-0 truncate text-[13px] font-medium text-slate-700">{unit}</span><button type="button" onClick={() => handleRemoveDepartment(unit)} aria-label={`${unit} birimini sil`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-4" /></button></li>)}
-                    </ul> : <p className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-xs text-slate-500">Henüz kadro birimi yok. Yeni departman ekleyerek başlayın.</p>}
-                    <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Birimi listeden kaldırmak mevcut kadro kayıtlarını silmez; yalnızca yeni seçimlerden ve filtre seçeneklerinden çıkarır.</p>
-                  </div>
-                </article>
-                <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
-                  <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
-                    <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p>
-                    <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Form Alanı Tanımları</h3>
-                    <p className="mt-1 text-[11px] text-slate-500">Kadro formu ve personel atamadaki seçilebilir değerleri yönetin.</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
-                    <ParameterListManager title="Kadro Ünvanı" description="Yeni kadro tanımlarken seçilebilecek ünvanlar." inputLabel="Yeni kadro ünvanı" placeholder="Örn. Kıdemli ürün uzmanı" values={positionTitles} onAdd={(value) => addCatalogValue(value, setPositionTitles)} onRemove={handleRemovePositionTitle} />
-                    <ParameterListManager title="Hizmet Sınıfı" description="Kadro formunda kullanılacak hizmet sınıfları." inputLabel="Yeni hizmet sınıfı" placeholder="Örn. Teknik Hizmetler" values={serviceClasses} onAdd={(value) => addCatalogValue(value, setServiceClasses)} onRemove={handleRemoveServiceClass} />
-                    <ParameterListManager title="Durum Kodu" description="Kadro formunda kullanılacak durum kodları." inputLabel="Yeni durum kodu" placeholder="Örn. AKTİF-03" values={statusCodes} onAdd={(value) => addCatalogValue(value.toLocaleUpperCase("tr-TR"), setStatusCodes)} onRemove={handleRemoveStatusCode} />
-                    <ParameterListManager title="Ekstra Durum" description="Personel atama formunda seçilebilecek ek durumlar." inputLabel="Yeni ekstra durum" placeholder="Örn. Geçici görevlendirme" values={extraStatusOptions} onAdd={(value) => addCatalogValue(value, setExtraStatusOptions)} onRemove={handleRemoveExtraStatus} />
-                  </div>
-                </article>
+              <section aria-labelledby="form-options-title" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.05)]">
+                <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p>
+                  <h3 id="form-options-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Form Alanı Tanımları</h3>
+                  <p className="mt-1 text-[11px] text-slate-500">Kadro formu ve personel atamadaki seçilebilir değerleri yönetin.</p>
+                </div>
+                <div className="grid grid-cols-1 items-start gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
+                  <article aria-labelledby="department-units-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:col-span-2 xl:col-span-3">
+                    <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
+                      <div><p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p><h4 id="department-units-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Birimleri Yönetimi</h4><p className="mt-1 text-[11px] text-slate-500">Birim listesindeki değişiklikler yeni kadro formu ve tablo filtresine anında yansır.</p></div>
+                    </div>
+                    <form onSubmit={handleAddDepartment} className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:px-6">
+                      <FormField label="Yeni departman adı">
+                        <FieldControl className="h-11 rounded-xl bg-slate-50/70 px-3.5"><input required maxLength={80} value={newDepartment} onChange={(event) => setNewDepartment(event.target.value)} placeholder="Örn: Pazarlama Daire Bşk." className="w-full bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /></FieldControl>
+                      </FormField>
+                      <button type="submit" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20"><Plus aria-hidden="true" className="size-4" />Birim ekle</button>
+                    </form>
+                    {departmentMessage && <p role="status" className="mx-5 mt-4 rounded-lg border border-teal-100 bg-teal-50 px-3.5 py-3 text-[11px] font-medium text-teal-800 sm:mx-6">{departmentMessage}</p>}
+                    <div className="p-5 sm:px-6 sm:py-6">
+                      <div className="mb-3 flex items-center justify-between gap-3"><h5 className="text-xs font-semibold text-slate-800">Tanımlı kadro birimleri</h5><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">{departmentUnits.length} birim</span></div>
+                      {departmentUnits.length ? <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                        {departmentUnits.map((unit) => <li key={unit} className="flex items-center justify-between gap-4 px-4 py-3"><span className="min-w-0 truncate text-[13px] font-medium text-slate-700">{unit}</span><button type="button" onClick={() => handleRemoveDepartment(unit)} aria-label={`${unit} birimini sil`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"><Trash2 aria-hidden="true" className="size-4" /></button></li>)}
+                      </ul> : <p className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-xs text-slate-500">Henüz kadro birimi yok. Yeni departman ekleyerek başlayın.</p>}
+                      <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Birimi listeden kaldırmak mevcut kadro kayıtlarını silmez; yalnızca yeni seçimlerden ve filtre seçeneklerinden çıkarır.</p>
+                    </div>
+                  </article>
+                  <ParameterListManager title="Kadro Ünvanı" description="Yeni kadro tanımlarken seçilebilecek ünvanlar." inputLabel="Yeni kadro ünvanı" placeholder="Örn. Kıdemli ürün uzmanı" values={positionTitles} onAdd={(value) => addCatalogValue(value, setPositionTitles)} onRemove={handleRemovePositionTitle} />
+                  <ParameterListManager title="Hizmet Sınıfı" description="Kadro formunda kullanılacak hizmet sınıfları." inputLabel="Yeni hizmet sınıfı" placeholder="Örn. Teknik Hizmetler" values={serviceClasses} onAdd={(value) => addCatalogValue(value, setServiceClasses)} onRemove={handleRemoveServiceClass} />
+                  <ParameterListManager title="Durum Kodu" description="Kadro formunda kullanılacak durum kodları." inputLabel="Yeni durum kodu" placeholder="Örn. AKTİF-03" values={statusCodes} onAdd={(value) => addCatalogValue(value.toLocaleUpperCase("tr-TR"), setStatusCodes)} onRemove={handleRemoveStatusCode} />
+                  <ParameterListManager title="Ekstra Durum" description="Personel atama formunda seçilebilecek ek durumlar." inputLabel="Yeni ekstra durum" placeholder="Örn. Geçici görevlendirme" values={extraStatusOptions} onAdd={(value) => addCatalogValue(value, setExtraStatusOptions)} onRemove={handleRemoveExtraStatus} />
+                </div>
               </section>
             ) : <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Sistem parametreleri yalnızca Admin rolüyle kullanılabilir.</p>
           ) : activeSection === "positions" ? (

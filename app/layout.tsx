@@ -2,6 +2,9 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
+const assetUrl = (path: string) =>
+  process.env.GITHUB_PAGES === 'true' ? `https://alpaymus.github.io/kadro${path}` : path
+
 export const metadata: Metadata = {
   title: 'Kadro Yönetimi',
   description: 'İnsan kaynakları kadro planlama ve organizasyon yönetimi.',
@@ -9,19 +12,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
+        url: assetUrl('/icon-light-32x32.png'),
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: assetUrl('/icon-dark-32x32.png'),
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: assetUrl('/icon.svg'),
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: assetUrl('/apple-icon.png'),
   },
 }
 

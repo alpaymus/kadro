@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Kadro Yönetimi | insightHR',
+  title: 'Kadro Yönetimi',
   description: 'İnsan kaynakları kadro planlama ve organizasyon yönetimi.',
   generator: 'v0.app',
   icons: {

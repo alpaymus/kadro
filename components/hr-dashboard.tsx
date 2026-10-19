@@ -1040,7 +1040,7 @@ export default function HrDashboard() {
               </article>
             </section>
           )}
-          <footer className="mt-8 flex flex-col items-start justify-between gap-2 border-t border-slate-200/80 pt-4 text-[10px] text-slate-400 sm:flex-row sm:items-center"><p>© 2025 insightHR <span className="px-1">·</span> İnsan kaynakları yönetim platformu</p><p>Güvenli ve güncel organizasyon yönetimi <ShieldCheck aria-hidden="true" className="ml-1 inline size-3" /></p></footer>
+          <footer className="mt-8 flex flex-col items-start justify-between gap-2 border-t border-slate-200/80 pt-4 text-[10px] text-slate-400 sm:flex-row sm:items-center"><p>© 2025 <span className="px-1">·</span> İnsan kaynakları yönetim platformu</p><p>Güvenli ve güncel organizasyon yönetimi <ShieldCheck aria-hidden="true" className="ml-1 inline size-3" /></p></footer>
         </div>
       </main>
     </div>

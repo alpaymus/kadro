@@ -1,6 +1,8 @@
+import { useState } from "react"
 import { ArrowDownRight, ArrowUpRight, Building2, ClipboardList, UsersRound } from "lucide-react"
 import type { BlockedRecord, HrApprovalRequest, Slot } from "@/components/hr-types"
 
+type ReportDimension = "department" | "title" | "serviceClass" | "degree" | "location"
 type UnitReport = {
   department: string
   total: number
@@ -8,6 +10,15 @@ type UnitReport = {
   vacant: number
   blocked: number
 }
+type GroupReport = UnitReport & { name: string }
+
+const reportDimensions: { value: ReportDimension; label: string }[] = [
+  { value: "department", label: "Kurum / birim" },
+  { value: "title", label: "Ünvan" },
+  { value: "serviceClass", label: "Sınıf" },
+  { value: "degree", label: "Derece" },
+  { value: "location", label: "Lokasyon" },
+]
 
 type HrReportsProps = {
   slots: Slot[]
@@ -24,29 +35,38 @@ function getVacantCount(slot: Slot) {
   return slot.vacantCount ?? (slot.status === "Boş" ? 1 : 0)
 }
 
-function getUnitReport(slots: Slot[], blockedRecords: BlockedRecord[], departmentUnits: string[]): UnitReport[] {
-  const units = new Map<string, UnitReport>()
-  const getUnit = (department: string) => {
-    const existing = units.get(department)
+function getGroupedReport(slots: Slot[], blockedRecords: BlockedRecord[], dimension: ReportDimension, departmentUnits: string[] = []): GroupReport[] {
+  const groups = new Map<string, GroupReport>()
+  const slotsById = new Map(slots.map((slot) => [slot.id, slot]))
+  const getGroup = (name: string, department = name) => {
+    const existing = groups.get(name)
     if (existing) return existing
-    const created = { department, total: 0, filled: 0, vacant: 0, blocked: 0 }
-    units.set(department, created)
+    const created = { name, department, total: 0, filled: 0, vacant: 0, blocked: 0 }
+    groups.set(name, created)
     return created
   }
+  const valueFor = (item: Slot | BlockedRecord) => {
+    const slot = "slotId" in item ? slotsById.get(item.slotId) : item
+    if (dimension === "department") return slot?.department ?? item.department
+    if (dimension === "title") return slot?.title ?? item.title
+    if (dimension === "degree") return slot?.degree ?? item.degree
+    if (dimension === "location") return (slot?.location ?? item.location)?.trim() || "Lokasyon belirtilmemiş"
+    return slot?.serviceClass?.trim() || ("serviceClass" in item ? item.serviceClass?.trim() : "") || "Sınıf belirtilmemiş"
+  }
 
-  departmentUnits.forEach(getUnit)
+  if (dimension === "department") departmentUnits.forEach((department) => getGroup(department))
   slots.forEach((slot) => {
-    const unit = getUnit(slot.department)
-    unit.filled += getFilledCount(slot)
-    unit.vacant += getVacantCount(slot)
+    const group = getGroup(valueFor(slot))
+    group.filled += getFilledCount(slot)
+    group.vacant += getVacantCount(slot)
   })
   blockedRecords.forEach((record) => {
-    getUnit(record.department).blocked += record.count
+    getGroup(valueFor(record)).blocked += record.count
   })
 
-  return [...units.values()]
-    .map((unit) => ({ ...unit, total: unit.filled + unit.vacant + unit.blocked }))
-    .sort((first, second) => second.total - first.total || first.department.localeCompare(second.department, "tr-TR"))
+  return [...groups.values()]
+    .map((group) => ({ ...group, total: group.filled + group.vacant + group.blocked }))
+    .sort((first, second) => second.total - first.total || first.name.localeCompare(second.name, "tr-TR"))
 }
 
 function getRequestDetails(request: HrApprovalRequest, slots: Slot[]) {
@@ -103,7 +123,7 @@ function MetricCard({ label, value, caption, icon: Icon, accent }: { label: stri
 }
 
 export function buildHrReportCsv({ slots, blockedRecords, pendingRequests, departmentUnits }: HrReportsProps) {
-  const units = getUnitReport(slots, blockedRecords, departmentUnits)
+  const units = getGroupedReport(slots, blockedRecords, "department", departmentUnits)
   const totals = units.reduce((result, unit) => ({
     total: result.total + unit.total,
     filled: result.filled + unit.filled,
@@ -111,25 +131,28 @@ export function buildHrReportCsv({ slots, blockedRecords, pendingRequests, depar
     blocked: result.blocked + unit.blocked,
   }), { total: 0, filled: 0, vacant: 0, blocked: 0 })
   const rows: unknown[][] = [
-    ["Yönetici Özeti"],
-    ["Metrik", "Değer"],
-    ["Toplam kadro", totals.total],
-    ["Dolu kadro", totals.filled],
-    ["Boş kadro", totals.vacant],
-    ["Bloke kadro", totals.blocked],
-    ["Doluluk oranı", `${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}%`],
-    [],
-    ["Birim Bazlı Kadro Durumu"],
-    ["Birim", "Toplam", "Dolu", "Boş", "Bloke", "Doluluk oranı"],
-    ...units.map((unit) => [unit.department, unit.total, unit.filled, unit.vacant, unit.blocked, `${unit.total ? Math.round((unit.filled / unit.total) * 100) : 0}%`]),
-    [],
-    ["Bekleyen Talepler"],
-    ["Talep No", "Talep türü", "Gönderim tarihi", "Kadro ID", "Birim", "Açıklama"],
-    ...pendingRequests.map((request) => {
-      const details = getRequestDetails(request, slots)
-      return [request.id, details.type, formatDate(request.submittedAt), details.slotId, details.department, details.details]
-    }),
+    ["Yönetici Özeti"], ["Metrik", "Değer", "Oran"],
+    ["Mevcut kadro", totals.total, "100%"],
+    ["Dolu kadro", totals.filled, `${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}%`],
+    ["Boş kadro", totals.vacant, `${totals.total ? Math.round((totals.vacant / totals.total) * 100) : 0}%`],
+    ["Bloke kadro", totals.blocked, `${totals.total ? Math.round((totals.blocked / totals.total) * 100) : 0}%`],
   ]
+  reportDimensions.forEach(({ value, label }) => {
+    const groups = getGroupedReport(slots, blockedRecords, value, departmentUnits)
+    rows.push([], [`Kadro Dağılımı — ${label}`], [label, "Mevcut sayı", "Mevcut oranı", "Dolu sayı", "Dolu oranı", "Boş sayı", "Boş oranı", "Bloke sayı", "Bloke oranı"])
+    groups.forEach((group) => rows.push([
+      group.name, group.total, `${group.total ? Math.round((group.total / totals.total) * 100) : 0}%`,
+      group.filled, `${group.total ? Math.round((group.filled / group.total) * 100) : 0}%`,
+      group.vacant, `${group.total ? Math.round((group.vacant / group.total) * 100) : 0}%`,
+      group.blocked, `${group.total ? Math.round((group.blocked / group.total) * 100) : 0}%`,
+    ]))
+    rows.push(["Genel toplam", totals.total, "100%", totals.filled, `${totals.total ? Math.round((totals.filled / totals.total) * 100) : 0}%`, totals.vacant, `${totals.total ? Math.round((totals.vacant / totals.total) * 100) : 0}%`, totals.blocked, `${totals.total ? Math.round((totals.blocked / totals.total) * 100) : 0}%`])
+  })
+  rows.push([], ["Bekleyen Talepler"], ["Talep No", "Talep türü", "Gönderim tarihi", "Kadro ID", "Birim", "Açıklama"])
+  pendingRequests.forEach((request) => {
+    const details = getRequestDetails(request, slots)
+    rows.push([request.id, details.type, formatDate(request.submittedAt), details.slotId, details.department, details.details])
+  })
   const encode = (value: unknown) => {
     const text = String(value ?? "")
     const safeText = /^[\s]*[=+@-]/.test(text) ? `'${text}` : text
@@ -139,12 +162,15 @@ export function buildHrReportCsv({ slots, blockedRecords, pendingRequests, depar
 }
 
 export default function HrReports({ slots, blockedRecords, pendingRequests, departmentUnits }: HrReportsProps) {
-  const units = getUnitReport(slots, blockedRecords, departmentUnits)
+  const [groupBy, setGroupBy] = useState<ReportDimension>("department")
+  const units = getGroupedReport(slots, blockedRecords, "department", departmentUnits)
+  const groups = getGroupedReport(slots, blockedRecords, groupBy, departmentUnits)
   const total = units.reduce((sum, unit) => sum + unit.total, 0)
   const filled = units.reduce((sum, unit) => sum + unit.filled, 0)
   const vacant = units.reduce((sum, unit) => sum + unit.vacant, 0)
   const blocked = units.reduce((sum, unit) => sum + unit.blocked, 0)
   const occupancy = total ? Math.round((filled / total) * 100) : 0
+  const selectedDimension = reportDimensions.find((dimension) => dimension.value === groupBy)?.label ?? "Kurum / birim"
 
   return (
     <section aria-label="Kadro raporları" className="flex flex-col gap-6">
@@ -160,59 +186,70 @@ export default function HrReports({ slots, blockedRecords, pendingRequests, depa
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard label="Toplam kadro" value={String(total)} caption="Dolu, boş ve bloke kadrolar" icon={UsersRound} accent="slate" />
           <MetricCard label="Dolu kadro" value={String(filled)} caption={`${occupancy}% doluluk oranı`} icon={ArrowUpRight} accent="teal" />
-          <MetricCard label="Boş kadro" value={String(vacant)} caption="Atama yapılabilecek kadrolar" icon={ArrowDownRight} accent="teal" />
+          <MetricCard label="Boş kadro" value={String(vacant)} caption={`${total ? Math.round((vacant / total) * 100) : 0}% boş kadro oranı`} icon={ArrowDownRight} accent="teal" />
           <MetricCard label="Bloke kadro" value={String(blocked)} caption="Geçici olarak kullanıma kapalı" icon={Building2} accent="amber" />
         </div>
       </section>
 
-      <section aria-labelledby="unit-status-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-end sm:px-6">
+      <section aria-labelledby="distribution-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-end sm:px-6">
           <div>
-            <h3 id="unit-status-title" className="text-sm font-semibold text-slate-900">Birim bazlı kadro durumu</h3>
-            <p className="mt-1 text-[11px] text-slate-500">Her birimde dolu, boş ve bloke kadro adetleri ile doluluk oranı.</p>
+            <h3 id="distribution-title" className="text-sm font-semibold text-slate-900">Kadro dağılımı</h3>
+            <p className="mt-1 text-[11px] text-slate-500">Kurum genelinde; birim, ünvan, sınıf, derece ve lokasyon kırılımında mevcut kadro ile dolu ve boş adet/oranları.</p>
           </div>
-          <div className="flex flex-wrap gap-3 text-[10px] font-medium text-slate-500" aria-label="Grafik renk açıklaması">
-            <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-teal-600" />Dolu</span>
-            <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-sky-300" />Boş</span>
-            <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-amber-400" />Bloke</span>
-          </div>
+          <label className="flex shrink-0 items-center gap-2 text-[11px] font-medium text-slate-600">
+            <span>Kırılım</span>
+            <select aria-label="Kadro raporu kırılımı" value={groupBy} onChange={(event) => setGroupBy(event.target.value as ReportDimension)} className="h-9 min-w-40 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+              {reportDimensions.map((dimension) => <option key={dimension.value} value={dimension.value}>{dimension.label}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-3 border-b border-slate-100 px-5 py-3 text-[10px] font-medium text-slate-500 sm:px-6" aria-label="Kadro durum renk açıklaması">
+          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-teal-600" />Dolu</span>
+          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-sky-300" />Boş</span>
+          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-amber-400" />Bloke</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
-            <thead><tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-5 py-3 sm:px-6">Birim</th><th scope="col" className="px-3 py-3 text-right">Toplam</th><th scope="col" className="px-3 py-3 text-right">Dolu</th><th scope="col" className="px-3 py-3 text-right">Boş</th><th scope="col" className="px-3 py-3 text-right">Bloke</th><th scope="col" className="px-5 py-3 sm:px-6">Doluluk</th>
-            </tr></thead>
+          <table className="w-full min-w-[1040px] border-collapse text-left">
+            <thead>
+              <tr className="bg-slate-50/80 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <th scope="col" rowSpan={2} className="px-5 py-3 sm:px-6">{selectedDimension}</th>
+                <th scope="colgroup" colSpan={2} className="px-3 py-2 text-center">Mevcut kadro</th>
+                <th scope="colgroup" colSpan={2} className="px-3 py-2 text-center">Dolu</th>
+                <th scope="colgroup" colSpan={2} className="px-3 py-2 text-center">Boş</th>
+                <th scope="colgroup" colSpan={2} className="px-3 py-2 text-center">Bloke</th>
+              </tr>
+              <tr className="border-t border-slate-100 bg-slate-50/80 text-[10px] font-medium text-slate-500">
+                <th scope="col" className="px-3 py-2 text-right">Sayı</th><th scope="col" className="px-3 py-2 text-right">Pay</th>
+                <th scope="col" className="px-3 py-2 text-right">Sayı</th><th scope="col" className="px-3 py-2 text-right">Oran</th>
+                <th scope="col" className="px-3 py-2 text-right">Sayı</th><th scope="col" className="px-3 py-2 text-right">Oran</th>
+                <th scope="col" className="px-3 py-2 text-right">Sayı</th><th scope="col" className="px-5 py-2 text-right sm:px-6">Oran</th>
+              </tr>
+            </thead>
             <tbody className="divide-y divide-slate-100">
-              {units.map((unit) => {
-                const rate = unit.total ? Math.round((unit.filled / unit.total) * 100) : 0
-                const filledWidth = unit.total ? (unit.filled / unit.total) * 100 : 0
-                const vacantWidth = unit.total ? (unit.vacant / unit.total) * 100 : 0
-                const blockedWidth = unit.total ? (unit.blocked / unit.total) * 100 : 0
-                return (
-                  <tr key={unit.department} className="hover:bg-slate-50/70">
-                    <th scope="row" className="max-w-[260px] px-5 py-3.5 text-left text-xs font-medium leading-relaxed text-slate-700 sm:px-6">{unit.department}</th>
-                    <td className="px-3 py-3.5 text-right text-xs font-semibold tabular-nums text-slate-800">{unit.total}</td>
-                    <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{unit.filled}</td>
-                    <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{unit.vacant}</td>
-                    <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{unit.blocked}</td>
-                    <td className="px-5 py-3.5 sm:px-6">
-                      <div className="flex items-center gap-3">
-                        <div role="img" aria-label={`${unit.department}: ${unit.filled} dolu, ${unit.vacant} boş, ${unit.blocked} bloke`} className="flex h-2 min-w-24 flex-1 overflow-hidden rounded-full bg-slate-100">
-                          {filledWidth > 0 && <span className="h-full bg-teal-600" style={{ width: `${filledWidth}%` }} />}
-                          {vacantWidth > 0 && <span className="h-full bg-sky-300" style={{ width: `${vacantWidth}%` }} />}
-                          {blockedWidth > 0 && <span className="h-full bg-amber-400" style={{ width: `${blockedWidth}%` }} />}
-                        </div>
-                        <span className="w-10 text-right text-[11px] font-semibold tabular-nums text-slate-700">{rate}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                )
+              {groups.map((group) => {
+                const ratio = (count: number) => group.total ? Math.round((count / group.total) * 100) : 0
+                const share = total ? Math.round((group.total / total) * 100) : 0
+                return <tr key={group.name} className="hover:bg-slate-50/70">
+                  <th scope="row" className="max-w-[260px] px-5 py-3.5 text-left text-xs font-medium leading-relaxed text-slate-700 sm:px-6">{group.name}</th>
+                  <td className="px-3 py-3.5 text-right text-xs font-semibold tabular-nums text-slate-800">{group.total}</td><td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-500">{share}%</td>
+                  <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{group.filled}</td><td className="px-3 py-3.5 text-right text-xs tabular-nums text-teal-700">{ratio(group.filled)}%</td>
+                  <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{group.vacant}</td><td className="px-3 py-3.5 text-right text-xs tabular-nums text-sky-700">{ratio(group.vacant)}%</td>
+                  <td className="px-3 py-3.5 text-right text-xs tabular-nums text-slate-700">{group.blocked}</td><td className="px-5 py-3.5 text-right text-xs tabular-nums text-amber-700 sm:px-6">{ratio(group.blocked)}%</td>
+                </tr>
               })}
-              {!units.length && <tr><td colSpan={6} className="px-6 py-10 text-center text-xs text-slate-500">Raporlanacak birim veya kadro kaydı bulunmuyor.</td></tr>}
+              {!groups.length && <tr><td colSpan={9} className="px-6 py-10 text-center text-xs text-slate-500">Raporlanacak kadro kaydı bulunmuyor.</td></tr>}
             </tbody>
-            <tfoot><tr className="border-t border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-800"><th scope="row" className="px-5 py-3.5 text-left sm:px-6">Genel toplam</th><td className="px-3 py-3.5 text-right tabular-nums">{total}</td><td className="px-3 py-3.5 text-right tabular-nums">{filled}</td><td className="px-3 py-3.5 text-right tabular-nums">{vacant}</td><td className="px-3 py-3.5 text-right tabular-nums">{blocked}</td><td className="px-5 py-3.5 text-right tabular-nums sm:px-6">{occupancy}%</td></tr></tfoot>
+            <tfoot><tr className="border-t border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-800">
+              <th scope="row" className="px-5 py-3.5 text-left sm:px-6">Kurum geneli</th>
+              <td className="px-3 py-3.5 text-right tabular-nums">{total}</td><td className="px-3 py-3.5 text-right tabular-nums">100%</td>
+              <td className="px-3 py-3.5 text-right tabular-nums">{filled}</td><td className="px-3 py-3.5 text-right tabular-nums">{occupancy}%</td>
+              <td className="px-3 py-3.5 text-right tabular-nums">{vacant}</td><td className="px-3 py-3.5 text-right tabular-nums">{total ? Math.round((vacant / total) * 100) : 0}%</td>
+              <td className="px-3 py-3.5 text-right tabular-nums">{blocked}</td><td className="px-5 py-3.5 text-right tabular-nums sm:px-6">{total ? Math.round((blocked / total) * 100) : 0}%</td>
+            </tr></tfoot>
           </table>
         </div>
+        <p className="border-t border-slate-100 px-5 py-3 text-[10px] leading-relaxed text-slate-500 sm:px-6">Dolu, boş ve bloke oranları ilgili kırılımdaki mevcut kadroya göre; mevcut oranı kurum toplamına göre hesaplanır. Bloke kadrolar mevcut sayıya dahildir.</p>
       </section>
 
       <section aria-labelledby="pending-requests-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

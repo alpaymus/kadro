@@ -5,6 +5,7 @@ export type Slot = {
   title: string
   department: string
   degree: string
+  location?: string
   serviceClass?: string
   approvalDate?: string
   vacantCount?: number
@@ -28,6 +29,7 @@ export type BlockedRecord = {
   title: string
   department: string
   degree: string
+  location?: string
   count: number
   processDate: string
   reason: string

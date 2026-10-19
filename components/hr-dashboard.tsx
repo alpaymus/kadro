@@ -75,8 +75,8 @@ function BrandMark() {
         <Building2 aria-hidden="true" className="size-[18px]" strokeWidth={2.2} />
       </div>
       <div>
-        <p className="text-[15px] font-bold tracking-tight text-white">insight<span className="text-teal-400">HR</span></p>
-        <p className="mt-0.5 text-[10px] font-medium tracking-[0.16em] text-slate-400">İNSAN KAYNAKLARI</p>
+        <p className="text-[15px] font-bold tracking-tight text-white">Kadro Yönetimi</p>
+        <p className="mt-0.5 text-[10px] font-medium tracking-[0.16em] text-slate-400">PERSONEL YÖNETİMİ</p>
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 
 export const runtime = "nodejs"
+export const dynamic = "force-static"
 
 export async function GET() {
   const document = await readFile(join(process.cwd(), "public", "Is_Analizi_Kadro_Personel_Atama.docx"))

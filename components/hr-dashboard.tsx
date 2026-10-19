@@ -35,18 +35,18 @@ function getTodayDate() {
 }
 
 const initialSlots: Slot[] = [
-  { id: "KDR-2025-001", title: "Kıdemli Ürün Tasarımcısı", department: "Ürün & Tasarım", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "AKTİF-01", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
-  { id: "KDR-2025-002", title: "İK İş Ortağı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-003", title: "Frontend Geliştirici", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-01-22", vacantCount: 0, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
-  { id: "KDR-2025-004", title: "Finans Uzmanı", department: "Finans", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-04-16", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-005", title: "İş Analisti", department: "Ürün & Tasarım", serviceClass: "Teknik Hizmetler", degree: "7. Derece", approvalDate: "2025-05-08", vacantCount: 0, filledCount: 0, statusCode: "BLOKE-01", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-006", title: "Backend Geliştirici", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-27", vacantCount: 1, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
-  { id: "KDR-2025-007", title: "Pazarlama Uzmanı", department: "Pazarlama", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-06-10", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-008", title: "Operasyon Yöneticisi", department: "Operasyon", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-01-14", vacantCount: 0, filledCount: 1, statusCode: "AKTİF-01", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
-  { id: "KDR-2025-009", title: "Veri Analisti", department: "Teknoloji", serviceClass: "Teknik Hizmetler", degree: "6. Derece", approvalDate: "2025-07-03", vacantCount: 2, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-010", title: "İşe Alım Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-21", vacantCount: 0, filledCount: 0, statusCode: "BLOKE-01", status: "Bloke", employee: null, initials: null, avatarTone: "" },
-  { id: "KDR-2025-011", title: "Satış Yöneticisi", department: "Satış", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-02-05", vacantCount: 0, filledCount: 2, statusCode: "AKTİF-01", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
-  { id: "KDR-2025-012", title: "İç İletişim Uzmanı", department: "İnsan & Kültür", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "AKTİF-02", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-001", title: "Memur", department: "Programcı", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-12", vacantCount: 1, filledCount: 3, statusCode: "SGK", status: "Dolu", employee: "Deniz Yılmaz", initials: "DY", avatarTone: "bg-violet-100 text-violet-700" },
+  { id: "KDR-2025-002", title: "V.H.K.İ.", department: "Memur", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-04", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-003", title: "Programcı", department: "Şube Müdürü", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-01-22", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Mert Aydın", initials: "MA", avatarTone: "bg-sky-100 text-sky-700" },
+  { id: "KDR-2025-004", title: "Şube Müdürü", department: "Memur", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-04-16", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-005", title: "Daire Başkanlığı", department: "Daire Başkanlığı", serviceClass: "Teknik Hizmetler", degree: "7. Derece", approvalDate: "2025-05-08", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-006", title: "Memur", department: "V.H.K.İ.", serviceClass: "Teknik Hizmetler", degree: "5. Derece", approvalDate: "2025-02-27", vacantCount: 1, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Ece Kaya", initials: "EK", avatarTone: "bg-amber-100 text-amber-700" },
+  { id: "KDR-2025-007", title: "V.H.K.İ.", department: "Programcı", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-06-10", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-008", title: "Programcı", department: "Daire Başkanlığı", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-01-14", vacantCount: 0, filledCount: 1, statusCode: "SGK", status: "Dolu", employee: "Can Demir", initials: "CD", avatarTone: "bg-rose-100 text-rose-700" },
+  { id: "KDR-2025-009", title: "Şube Müdürü", department: "Şube Müdürü", serviceClass: "Teknik Hizmetler", degree: "6. Derece", approvalDate: "2025-07-03", vacantCount: 2, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-010", title: "Daire Başkanlığı", department: "V.H.K.İ.", serviceClass: "Genel İdare Hizmetleri", degree: "6. Derece", approvalDate: "2025-03-21", vacantCount: 0, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Bloke", employee: null, initials: null, avatarTone: "" },
+  { id: "KDR-2025-011", title: "Memur", department: "Memur", serviceClass: "Genel İdare Hizmetleri", degree: "4. Derece", approvalDate: "2025-02-05", vacantCount: 0, filledCount: 2, statusCode: "SGK", status: "Dolu", employee: "Selin Aras", initials: "SA", avatarTone: "bg-teal-100 text-teal-700" },
+  { id: "KDR-2025-012", title: "V.H.K.İ.", department: "Şube Müdürü", serviceClass: "Genel İdare Hizmetleri", degree: "7. Derece", approvalDate: "2025-08-19", vacantCount: 1, filledCount: 0, statusCode: "Şahsa Bağlı", status: "Boş", employee: null, initials: null, avatarTone: "" },
 ]
 
 type DashboardSection = "workspace" | "positions" | "assignments" | "blocked" | "degree-change" | "approvals" | "reports" | "system-parameters"
@@ -382,12 +382,12 @@ export default function HrDashboard() {
   const [slots, setSlots] = useState<Slot[]>(initialSlots)
   const [blockedRecords, setBlockedRecords] = useState<BlockedRecord[]>(() => initialSlots.filter((slot) => slot.status === "Bloke").map((slot) => ({ id: slot.id, slotId: slot.id, title: slot.title, department: slot.department, degree: slot.degree, count: 1, processDate: slot.approvalDate ?? "", reason: "Geçici kadro blokesi", description: "Mevcut bloke kadro kaydı." })))
   const [currentUserId, setCurrentUserId] = useState<string>(mockHrUsers[0].id)
-  const [departmentUnits, setDepartmentUnits] = useState<string[]>(["İnsan & Kültür", "Teknoloji", "Ürün & Tasarım", "Finans", "Pazarlama", "Operasyon", "Satış"])
+  const [departmentUnits, setDepartmentUnits] = useState<string[]>(["Personel Daire Başkanlığı", "Bilgi Teknolojileri Genel Müdürlüğü", "Strateji Geliştirme Başkanlığı", "BTGM İş Geliştirme Daire Başkanlığı"])
   const [newDepartment, setNewDepartment] = useState("")
   const [departmentMessage, setDepartmentMessage] = useState("")
-  const [positionTitles, setPositionTitles] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.title))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [positionTitles, setPositionTitles] = useState<string[]>(["Memur", "V.H.K.İ.", "Programcı", "Şube Müdürü", "Daire Başkanlığı"])
   const [serviceClasses, setServiceClasses] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.serviceClass).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
-  const [statusCodes, setStatusCodes] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.statusCode).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
+  const [statusCodes, setStatusCodes] = useState<string[]>(["SGK", "Şahsa Bağlı"])
   const [extraStatusOptions, setExtraStatusOptions] = useState<string[]>(() => Array.from(new Set(initialSlots.map((slot) => slot.extraStatus).filter((value): value is string => Boolean(value)))).sort((first, second) => first.localeCompare(second, "tr-TR")))
   const [departmentFilter, setDepartmentFilter] = useState("Tümü")
   const [approvalRequests, setApprovalRequests] = useState<HrApprovalRequest[]>([])
@@ -740,7 +740,7 @@ export default function HrDashboard() {
 
     if (editingSlotId) {
       if (!submitForApproval({ kind: "slot-update", slotId: editingSlotId, updates: updatedFields })) return
-      setFormMessage(`${editingSlotId} numaralı kadro değişikliği onaya gönderildi.`)
+      setFormMessage(`${editingSlotId} numaral�� kadro değişikliği onaya gönderildi.`)
       resetForm()
       return
     }
@@ -831,7 +831,7 @@ export default function HrDashboard() {
                   <p className="mt-1 text-[11px] text-slate-500">Kadro formu ve personel atamadaki seçilebilir değerleri yönetin.</p>
                 </div>
                 <div className="grid grid-cols-1 items-start gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
-                  <article aria-labelledby="department-units-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:col-span-2 xl:col-span-3">
+                  <article aria-labelledby="department-units-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div className="flex items-start gap-3.5 border-b border-teal-100 bg-gradient-to-br from-teal-50/80 via-white to-white px-5 py-5 sm:px-6">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-700 shadow-sm"><Settings2 aria-hidden="true" className="size-5" /></div>
                       <div><p className="mb-1 text-[9px] font-bold uppercase tracking-[0.16em] text-teal-700">Form seçenekleri</p><h4 id="department-units-title" className="text-[15px] font-semibold tracking-tight text-slate-900">Kadro Birimleri Yönetimi</h4><p className="mt-1 text-[11px] text-slate-500">Birim listesindeki değişiklikler yeni kadro formu ve tablo filtresine anında yansır.</p></div>

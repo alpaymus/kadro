@@ -1,19 +1,70 @@
-<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kullanım Senaryosu Diyagramları</title><style>body{margin:0;background:#f4f7fa;color:#193244;font:16px/1.5 Arial,sans-serif}main{max-width:980px;margin:48px auto;padding:32px;background:#fff;border:1px solid #dce5eb;border-radius:18px}h1{margin:0 0 8px}p{color:#526879}ul{list-style:none;padding:0;margin:28px 0}li{display:flex;justify-content:space-between;gap:16px;padding:14px 12px;border-bottom:1px solid #e8eef2}a{color:#176b79;font-weight:700;text-decoration:none}a:hover{text-decoration:underline}li span{color:#607586}.download{display:inline-block;background:#176b79;color:white;padding:12px 18px;border-radius:9px}@media(max-width:700px){main{margin:16px;padding:20px}li{display:block}li span{display:block;margin-top:4px}}</style><main><h1>Kullanım Senaryosu (Use Case) Diyagramları</h1><p>Her bir senaryo için ayrı SVG dosyası. Diyagramlar sistem sınırını, aktörü, ana senaryoyu ve ilgili include/extend ilişkilerini gösterir.</p><a class="download" href="/use-case-diyagramlari.zip" download>Tüm SVG’leri ZIP olarak indir</a><ul><li><a href="uc-01-sisteme-giriş-yapma.svg" download>UC-01 — Kurum SSO’su ile sisteme giriş</a><span>Sisteme erişim yetkili kullanıcı</span></li>
-<li><a href="uc-02-kadro-listesini-görüntüleme.svg" download>UC-02 — Kadro listesini görüntüleme</a><span>Kadro görüntüleme yetkili kullanıcı</span></li>
-<li><a href="uc-03-kadro-detaylarını-görüntüleme.svg" download>UC-03 — Kadro detaylarını görüntüleme</a><span>Kadro görüntüleme yetkili kullanıcı</span></li>
-<li><a href="uc-04-kadro-oluşturma--düzenleme-talebi.svg" download>UC-04 — Kadro oluşturma / düzenleme talebi</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-05-kadro-bloke-etme-talebi.svg" download>UC-05 — Kadro bloke etme talebi</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-06-kadro-derece-değişikliği-talebi.svg" download>UC-06 — Kadro derece değişikliği talebi</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-07-personel-ataması-talebi-oluşturma.svg" download>UC-07 — Personel ataması talebi oluşturma</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-08-talebi-doğrulama-ve-onaya-gönderme.svg" download>UC-08 — Talebi doğrulama ve onaya gönderme</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-09-ekstra-durum-seçeneği-seçme.svg" download>UC-09 — Ekstra Durum seçeneği seçme</a><span>İK Sorumlusu</span></li>
-<li><a href="uc-10-bekleyen-talepleri-görüntüleme.svg" download>UC-10 — Bekleyen talepleri görüntüleme</a><span>İK Müdürü</span></li>
-<li><a href="uc-11-talebi-inceleme-ve-karar-verme.svg" download>UC-11 — Talebi inceleme ve karar verme</a><span>İK Müdürü</span></li>
-<li><a href="uc-12-talebi-onaylama.svg" download>UC-12 — Talebi onaylama</a><span>İK Müdürü</span></li>
-<li><a href="uc-13-talebi-gerekçe-ile-reddetme.svg" download>UC-13 — Talebi gerekçe ile reddetme</a><span>İK Müdürü</span></li>
-<li><a href="uc-14-sistem-parametrelerini-görüntüleme.svg" download>UC-14 — Sistem parametrelerini görüntüleme</a><span>Admin</span></li>
-<li><a href="uc-15-kadro-birimi-tanımlarını-yönetme.svg" download>UC-15 — Kadro birimi tanımlarını yönetme</a><span>Admin</span></li>
-<li><a href="uc-16-kadro-ünvanı-tanımlarını-yönetme.svg" download>UC-16 — Kadro ünvanı tanımlarını yönetme</a><span>Admin</span></li>
-<li><a href="uc-17-hizmet-sınıfı-tanımlarını-yönetme.svg" download>UC-17 — Hizmet sınıfı tanımlarını yönetme</a><span>Admin</span></li>
-<li><a href="uc-18-durum-kodu-tanımlarını-yönetme.svg" download>UC-18 — Durum kodu tanımlarını yönetme</a><span>Admin</span></li>
-<li><a href="uc-19-ekstra-durum-seçeneklerini-yönetme.svg" download>UC-19 — Ekstra Durum seçeneklerini yönetme</a><span>Admin</span></li></ul></main></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Kadro Yönetimi Portalı için iş/süreç akışı ve sekiz ayrı kullanım senaryosu SVG diyagramı.">
+  <title>İş Analizi · Süreç ve Kullanım Senaryosu Diyagramları</title>
+  <style>
+    :root{color-scheme:light;--ink:#18324b;--muted:#60758a;--teal:#0e7c7b;--line:#dce6ed;--surface:#f5f8fa}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--surface);color:var(--ink);font:16px/1.5 Arial,"Helvetica Neue",sans-serif}
+    main{max-width:1160px;margin:0 auto;padding:48px 28px 72px}
+    header{margin-bottom:30px}
+    .eyebrow{margin:0;color:var(--teal);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 8px;font-size:clamp(26px,4vw,38px);line-height:1.15}
+    header p:not(.eyebrow){max-width:720px;margin:0;color:var(--muted)}
+    .download{display:inline-flex;align-items:center;min-height:44px;margin-top:20px;padding:0 18px;border-radius:8px;background:var(--teal);color:white;font-weight:700;text-decoration:none}
+    .download:hover{background:#086b6a}
+    .grid{display:grid;grid-template-columns:1fr;gap:20px}
+    article{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:white;box-shadow:0 2px 8px #18324b0a}
+    .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px 10px}
+    h2{margin:0;font-size:16px;line-height:1.4}
+    .actor{margin:5px 0 0;color:var(--muted);font-size:12px}
+    .file{flex-shrink:0;color:var(--teal);font-size:12px;font-weight:700;text-decoration:none}
+    .file:hover{text-decoration:underline}
+    img{display:block;width:100%;height:auto;background:white}
+    @media(max-width:720px){main{padding:28px 16px 48px}.grid{grid-template-columns:1fr}.card-head{padding:16px 16px 8px}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">Kadro Yönetimi · İş Analizi</p>
+    <h1>İş / süreç akışı ve kullanım senaryosu diyagramları</h1>
+    <p>Projenin uçtan uca iş akışını ve iş analizi dokümanındaki UC-01–UC-08 kullanım senaryolarını SVG olarak görüntüleyin veya indirin.</p>
+    <a class="download" href="/Is_Analizi_UC_Diyagramlari.zip" download>Sekiz ayrı senaryoyu ZIP olarak indir</a>
+    <a class="download" href="/Is_Analizi_Tum_UC_Diyagramlari.zip" download style="margin-left:10px;background:#164872">Genel diyagram + tüm senaryoları indir</a>
+  </header>
+  <section aria-label="İş ve süreç akışı diyagramı" style="margin-bottom:24px">
+    <article>
+      <div class="card-head">
+        <div><h2>Kadro Yönetimi Portalı — İş / Süreç Akışı</h2><p class="actor">Portal erişimi, kadro işlemleri, UC-03–UC-05 talepleri, UC-06 karar akışı ve UC-07–UC-08 modülleri</p></div>
+        <a class="file" href="/is-surec-akis-diyagrami.svg" download>SVG indir</a>
+        <a class="file" href="/is-surec-akis-diyagrami.png" download>PNG indir</a>
+      </div>
+      <a href="/is-surec-akis-diyagrami.svg"><img src="/is-surec-akis-diyagrami.svg" alt="Kadro Yönetimi Portalı için kullanıcı rolü ve başlangıçtan onay veya ret kararına, sistem yönetimi ve raporlara uzanan iş/süreç akış diyagramı"></a>
+    </article>
+  </section>
+  <section aria-label="Genel kullanım senaryosu diyagramı" style="margin-bottom:24px">
+    <article>
+      <div class="card-head">
+        <div><h2>Genel kullanım senaryosu diyagramı</h2><p class="actor">Portal kullanıcıları, rol ilişkileri, sistem sınırı ve UC-01–UC-08</p></div>
+        <a class="file" href="kadro-yonetimi-use-case-diyagrami.svg" download>Genel SVG’yi indir</a>
+      </div>
+      <a href="kadro-yonetimi-use-case-diyagrami.svg"><img src="kadro-yonetimi-use-case-diyagrami.svg" alt="Kadro Yönetimi Portalı'nın üç kullanıcı rolünü, sekiz kullanım senaryosunu ve mevcut olmayan hedef kimlik entegrasyonunu gösteren genel UML diyagramı"></a>
+    </article>
+  </section>
+  <section class="grid" aria-label="Kullanım senaryosu SVG dosyaları">
+    <article><div class="card-head"><div><h2>UC-01 — Uygulamaya erişim ve rol görünümü</h2><p class="actor">İK Sorumlusu · İK Müdürü · Admin</p></div><a class="file" href="uc-ba-01-erisim-rol.svg" download>SVG indir</a></div><img src="uc-ba-01-erisim-rol.svg" alt="UC-01 erişim ve rol görünümü kullanım senaryosu UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-02 — Kadro yönetimi, arama ve listeleme</h2><p class="actor">Yetkili kullanıcı rolleri</p></div><a class="file" href="uc-ba-02-kadro-listeleme.svg" download>SVG indir</a></div><img src="uc-ba-02-kadro-listeleme.svg" alt="UC-02 kadro yönetimi, arama ve listeleme UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-03 — Personel atama talebi</h2><p class="actor">İK Sorumlusu</p></div><a class="file" href="uc-ba-03-personel-atama.svg" download>SVG indir</a></div><img src="uc-ba-03-personel-atama.svg" alt="UC-03 personel atama talebi UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-04 — Kadro bloke talebi</h2><p class="actor">İK Sorumlusu</p></div><a class="file" href="uc-ba-04-kadro-bloke.svg" download>SVG indir</a></div><img src="uc-ba-04-kadro-bloke.svg" alt="UC-04 kadro bloke talebi UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-05 — Kadro derece değişikliği talebi</h2><p class="actor">İK Sorumlusu</p></div><a class="file" href="uc-ba-05-derece-degisikligi.svg" download>SVG indir</a></div><img src="uc-ba-05-derece-degisikligi.svg" alt="UC-05 kadro derece değişikliği talebi UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-06 — Onay merkezi ve karar geçmişi</h2><p class="actor">İK Müdürü · İK Sorumlusu</p></div><a class="file" href="uc-ba-06-onay-merkezi.svg" download>SVG indir</a></div><img src="uc-ba-06-onay-merkezi.svg" alt="UC-06 onay merkezi ve karar geçmişi UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-07 — Sistem parametreleri yönetimi</h2><p class="actor">Admin</p></div><a class="file" href="uc-ba-07-sistem-parametreleri.svg" download>SVG indir</a></div><img src="uc-ba-07-sistem-parametreleri.svg" alt="UC-07 sistem parametreleri yönetimi UML diyagramı" loading="lazy"></article>
+    <article><div class="card-head"><div><h2>UC-08 — Raporlama ve sorumluluk görünümü</h2><p class="actor">İK Müdürü · İK Sorumlusu · Admin</p></div><a class="file" href="uc-ba-08-raporlama.svg" download>SVG indir</a></div><img src="uc-ba-08-raporlama.svg" alt="UC-08 raporlama ve sorumluluk görünümü UML diyagramı" loading="lazy"></article>
+  </section>
+</main>
+</body>
+</html>

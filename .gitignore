@@ -15,3 +15,6 @@ node_modules
 .next/
 out/
 .DS_Store
+
+# User-provided analysis template (reference only)
+/data/_Analizi_Dokuman-79023b.docx
